@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webcam Orientation with Overlays</title>
+    <title>AMFI Photobooth</title>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <style>
         body {
             margin: 0;
@@ -18,8 +19,8 @@
 
         #container {
             position: relative;
-            width: 960px;
-            height: 1680px;
+            width: 1000px;
+            height: 1778px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             border-radius: 10px;
             overflow: hidden;
@@ -64,7 +65,7 @@
 
         #buttonContainer {
             position: absolute;
-            bottom: 20px;
+            bottom: 50px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -84,15 +85,15 @@
             transition: background-color 0.3s, box-shadow 0.3s;
         }
 
-        .button:hover {
-            background-color: #0056b3;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-        }
+            .button:hover {
+                background-color: #0056b3;
+                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            }
 
         #overlaySelection {
             display: none;
             position: absolute;
-            bottom: 90px;
+            bottom: 120px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -110,12 +111,13 @@
             transition: border-color 0.3s;
         }
 
-        .overlayOption:hover {
-            border-color: #007BFF;
-        }
+            .overlayOption:hover {
+                border-color: #007BFF;
+            }
 
         .selected {
             border-color: #007BFF;
+            
         }
 
         #modal {
@@ -134,15 +136,86 @@
             padding: 20px;
         }
 
-        #modal img {
-            max-width: 90%;
-            max-height: 80%;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            border: 2px solid #fff;
+            #modal img {
+                max-width: 90%;
+                max-height: 80%;
+                margin-bottom: 20px;
+                border-radius: 10px;
+                border: 2px solid #fff;
+            }
+
+            #modal #closeButton {
+                padding: 12px 25px;
+                background-color: #FF0000;
+                color: #fff;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 18px;
+                transition: background-color 0.3s, box-shadow 0.3s;
+            }
+
+                #modal #closeButton:hover {
+                    background-color: #cc0000;
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+                }
+
+            #modal #shareButton {
+                padding: 12px 25px;
+                background-color: #109A7B;
+                color: #fff;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 18px;
+                transition: background-color 0.3s, box-shadow 0.3s;
+            }
+
+            #modal #printButton {
+                padding: 12px 25px;
+                background-color: #109A7B;
+                color: #fff;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 18px;
+                transition: background-color 0.3s, box-shadow 0.3s;
+            }
+        .modal-btn-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
         }
 
-        #modal #closeButton {
+
+
+
+        #qrModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+            flex-direction: column;
+            text-align: center;
+        }
+
+            #qrModal img {
+                max-width: 90%;
+                max-height: 80%;
+                margin-bottom: 20px;
+                border-radius: 10px;
+                border: 2px solid #fff;
+            }
+
+        #closeQrModalButton {
             padding: 12px 25px;
             background-color: #FF0000;
             color: #fff;
@@ -153,27 +226,10 @@
             transition: background-color 0.3s, box-shadow 0.3s;
         }
 
-        #modal #closeButton:hover {
-            background-color: #cc0000;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        #modal #shareButton {
-            padding: 12px 25px;
-            background-color: #109A7B;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 18px;
-            transition: background-color 0.3s, box-shadow 0.3s;
-        }
-
-        .modal-btn-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+            #closeQrModalButton:hover {
+                background-color: #cc0000;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            }
     </style>
 </head>
 
@@ -181,21 +237,21 @@
     <div id="container">
         <video id="webcam" autoplay playsinline></video>
         <canvas id="canvas"></canvas>
-        <img id="overlay" src="../Photos/Sachin.png" alt="Overlay Image" />
+        <img id="overlay" src="../Photos/Sachintest.png" alt="Overlay Image" /><!--Sachin.png-->
         <div id="countdown"></div>
 
 
-        <div id="overlaySelection">
-            <img class="overlayOption selected" src="../Photos/Sachin.png" data-overlay="../Photos/Sachin.png"
-                alt="Overlay 1">
-            <img class="overlayOption" src="../Photos/RohitovlayImg.png" data-overlay="../Photos/RohitovlayImg.png"
-                alt="Overlay 2">
-            <img class="overlayOption" src="../Photos/DhoniovlayImg.png" data-overlay="../Photos/DhoniovlayImg.png"
-                alt="Overlay 3">
+        <div id="overlaySelection" style="display: flex;">
+            <img class="overlayOption selected" src="../Photos/Sachintest.png" data-overlay="../Photos/Sachintest.png"
+                 alt="Overlay 1"><!--Sachin.png-->
+            <img class="overlayOption" src="../Photos/Rohithalf.png" data-overlay="../Photos/Rohithalf.png"
+                 alt="Overlay 2"><!--RohitovlayImg-->
+            <img class="overlayOption" src="../Photos/Dhonihalf.png" data-overlay="../Photos/DhoniovlayImg.png"
+                 alt="Overlay 3"><!--DhoniovlayImg-->
         </div>
 
         <div id="buttonContainer">
-            <button id="showOverlayButton" class="button">Show Overlays</button>
+            <button id="showOverlayButton" class="button">Hide Selections</button>
             <button id="captureButton" class="button">Start Capture</button>
         </div>
     </div>
@@ -206,14 +262,28 @@
 
             <button id="closeButton">Recapture</button>
             <button id="shareButton">Share</button>
+            <button id="printButton">Print</button>
+
+        </div>
+    </div>
+
+    <div id="qrModal" style="display: none;">
+        <div style="background-color: white; padding: 20px; border-radius: 8px; text-align: center;">
+            <h2>Your QR Code</h2>
+            <img id="qrCodeImage" src="" alt="QR Code" style="width: 300px; height: 300px;" />
+            <button id="closeQrButton">Close</button>
         </div>
     </div>
 
     <script>
+        let isCapturing = false;
+        const ovlayButton = document.getElementById('showOverlayButton');
+
         async function startWebcam() {
             const video = document.getElementById('webcam');
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
+            const threshold = 200;
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
@@ -221,8 +291,8 @@
                 });
                 video.srcObject = stream;
 
-                canvas.width = 960;
-                canvas.height = 1680;
+                canvas.width = 1000;
+                canvas.height = 1778;
 
                 video.addEventListener('loadedmetadata', () => {
                     video.width = video.videoWidth;
@@ -257,13 +327,25 @@
 
         function startCapture() {
 
+            const overlaySelection = document.getElementById('overlaySelection');
+
+            if (overlaySelection.style.display === 'flex') {
+                toggleOverlaySelection();
+            }
+
+            if (isCapturing) return;
+            isCapturing = true;
+
             const countdownElement = document.getElementById('countdown');
             const modal = document.getElementById('modal');
             const capturedImage = document.getElementById('capturedImage');
             const canvas = document.getElementById('canvas');
             const overlay = document.getElementById('overlay');
-            let countdown = 1;
+            const captureButton = document.getElementById('captureButton');
 
+            let countdown = 15; //15;
+            captureButton.disabled = true;
+            ovlayButton.disabled = true;
 
             const countdownInterval = setInterval(() => {
                 countdownElement.style.display = 'block';
@@ -275,31 +357,130 @@
                     countdownElement.style.display = 'none';
                 }
             }, 1000);
-
-            function captureImage() {
-                const ctx = canvas.getContext('2d');
-
-                ctx.save();
-                ctx.translate(canvas.width / 2, canvas.height / 2);
-                ctx.rotate(90 * Math.PI / 180);
-                ctx.scale(1, -1);
-                ctx.drawImage(document.getElementById('webcam'), -canvas.height / 2, -canvas.width / 2, canvas.height, canvas.width);
-                ctx.restore();
-
-                ctx.drawImage(overlay, 0, 0, canvas.width, canvas.height);
-
-                const imageDataUrl = canvas.toDataURL('image/png');
-                capturedImage.src = imageDataUrl;
-
-                modal.style.display = 'flex';
-                modal.style.flexWrap = 'wrap';
-                modal.style.flexDirection = 'column';
-            }
-
-            document.getElementById('closeButton').addEventListener('click', () => {
-                modal.style.display = 'none';
-            });
         }
+
+
+        function captureImage() {
+            const ctx = canvas.getContext('2d');
+
+
+            ctx.save();
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(90 * Math.PI / 180);
+            ctx.scale(1, -1);
+            ctx.drawImage(document.getElementById('webcam'), canvas.height, canvas.width);
+            ctx.restore();
+
+
+            ctx.drawImage(overlay, 0, 0, canvas.width, canvas.height);
+
+
+            const imageDataUrl = canvas.toDataURL('image/png');
+            capturedImage.src = imageDataUrl;
+
+
+            modal.style.display = 'flex';
+            modal.style.flexWrap = 'wrap';
+            modal.style.flexDirection = 'column';
+
+            const captureButton = document.getElementById('captureButton');
+            captureButton.disabled = false;
+            ovlayButton.disabled = false;
+            isCapturing = false;
+        }
+
+        document.getElementById('closeButton').addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        
+
+        // Handle the share button click
+        document.getElementById('shareButton').addEventListener('click', async () => {
+
+            document.getElementById('qrModal').style.display = 'flex';
+
+
+            const BASEURL = 'https://192.168.29.177:5000';
+            const imageDataUrl = capturedImage.src;
+
+
+            const blob = await (await fetch(imageDataUrl)).blob();
+
+            const formData = new FormData();
+            formData.append('image', blob, 'capture.png');
+
+
+            try {
+
+                const response = await axios.post(BASEURL + '/api/generate-qr', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+
+
+                const qrCodeUrl = response.data.qrImageUrl;
+
+
+                document.getElementById('qrCodeImage').src = BASEURL + qrCodeUrl;
+                document.getElementById('qrModal').style.display = 'flex';
+            } catch (error) {
+                console.error('Error uploading image:', error);
+            }
+            
+        });
+
+        document.getElementById('closeQrButton').addEventListener('click', () => {
+            document.getElementById('qrModal').style.display = 'none';
+        });
+
+        document.getElementById('printButton').addEventListener('click', () => {
+            const imageUrl = capturedImage.src;
+
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.open();
+            printWindow.document.write(`
+        <html>
+            <head>
+                <title>Print Captured Image</title>
+                <style>
+                    @media print {
+                        body { 
+                            margin: 0; 
+                            padding: 0; 
+                            display: flex;
+                            justify-content: center; 
+                            align-items: center;
+                            height: 100vh; /* Ensure body height fills the page */
+                        }
+                        img { 
+                            width: auto; 
+                            height: 100%; 
+                            page-break-before: avoid; 
+                            display: block;
+                        }
+                    }
+                    @page {
+                        size: auto;  /* auto is the initial value */
+                        margin: 0mm; /* this affects the margin in the printer settings */
+                    }
+                </style>
+            </head>
+            <body>
+                <img src="${imageUrl}" alt="Captured Image" />
+            </body>
+        </html>
+    `);
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 500);
+        });
+        //}
 
         function handleOverlaySelection() {
             const overlays = document.querySelectorAll('.overlayOption');
@@ -307,6 +488,8 @@
 
             overlays.forEach(overlay => {
                 overlay.addEventListener('click', () => {
+                    if (isCapturing) return;
+
                     overlays.forEach(o => o.classList.remove('selected'));
                     overlay.classList.add('selected');
                     const selectedOverlaySrc = overlay.getAttribute('data-overlay');
@@ -316,11 +499,17 @@
         }
 
         function toggleOverlaySelection() {
+            if (isCapturing) return;
+
             const overlaySelection = document.getElementById('overlaySelection');
+            const showOverlayButton = document.getElementById('showOverlayButton');
+
             if (overlaySelection.style.display === 'flex') {
                 overlaySelection.style.display = 'none';
+                showOverlayButton.textContent = 'Show Selections'; 
             } else {
                 overlaySelection.style.display = 'flex';
+                showOverlayButton.textContent = 'Hide Selections'; 
             }
         }
 
