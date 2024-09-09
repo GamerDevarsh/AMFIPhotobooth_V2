@@ -19,8 +19,8 @@
 
         #container {
             position: relative;
-            width: 1000px;
-            height: 1778px;
+            width: 1010px;
+            height: 1796px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             border-radius: 10px;
             overflow: hidden;
@@ -237,12 +237,12 @@
     <div id="container">
         <video id="webcam" autoplay playsinline></video>
         <canvas id="canvas"></canvas>
-        <img id="overlay" src="../Photos/Sachintest.png" alt="Overlay Image" /><!--Sachin.png-->
+        <img id="overlay" src="../Photos/Sachintest1.png" alt="Overlay Image" /><!--Sachin.png-->
         <div id="countdown"></div>
 
 
         <div id="overlaySelection" style="display: flex;">
-            <img class="overlayOption selected" src="../Photos/Sachintest.png" data-overlay="../Photos/Sachintest.png"
+            <img class="overlayOption selected" src="../Photos/Sachintest1.png" data-overlay="../Photos/Sachintest1.png"
                  alt="Overlay 1"><!--Sachin.png-->
             <img class="overlayOption" src="../Photos/Rohithalf.png" data-overlay="../Photos/Rohithalf.png"
                  alt="Overlay 2"><!--RohitovlayImg-->
@@ -291,8 +291,8 @@
                 });
                 video.srcObject = stream;
 
-                canvas.width = 1000;
-                canvas.height = 1778;
+                canvas.width = 1010;
+                canvas.height = 1796;
 
                 video.addEventListener('loadedmetadata', () => {
                     video.width = video.videoWidth;
