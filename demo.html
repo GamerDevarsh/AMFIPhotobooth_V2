@@ -198,24 +198,45 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: rgba(0, 0, 0, 0.8); 
             justify-content: center;
             align-items: center;
             z-index: 1000;
             padding: 20px;
             flex-direction: column;
             text-align: center;
+            color: white;
         }
 
-            #qrModal img {
-                max-width: 90%;
-                max-height: 80%;
-                margin-bottom: 20px;
-                border-radius: 10px;
-                border: 2px solid #fff;
-            }
+        #qrModalContent {
+            background-color: #33333373; 
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
 
-        #closeQrModalButton {
+        #qrModal h2 {
+            color: white;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        #qrModal img {
+            width: 250px;
+            height: 250px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            border: 3px solid #fff;
+        }
+
+        #closeQrButton {
             padding: 12px 25px;
             background-color: #FF0000;
             color: #fff;
@@ -226,7 +247,7 @@
             transition: background-color 0.3s, box-shadow 0.3s;
         }
 
-            #closeQrModalButton:hover {
+            #closeQrButton:hover {
                 background-color: #cc0000;
                 box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
             }
@@ -268,9 +289,9 @@
     </div>
 
     <div id="qrModal" style="display: none;">
-        <div style="background-color: white; padding: 20px; border-radius: 8px; text-align: center;">
+        <div id="qrModalContent">
             <h2>Your QR Code</h2>
-            <img id="qrCodeImage" src="" alt="QR Code" style="width: 300px; height: 300px;" />
+            <img id="qrCodeImage" src="" alt="QR Code" />
             <button id="closeQrButton">Close</button>
         </div>
     </div>
@@ -393,25 +414,21 @@
             modal.style.display = 'none';
         });
 
-        
 
-        // Handle the share button click
         document.getElementById('shareButton').addEventListener('click', async () => {
-
-            document.getElementById('qrModal').style.display = 'flex';
-
-
+            const shareButton = document.getElementById('shareButton');
             const BASEURL = 'https://192.168.29.177:5000';
             const imageDataUrl = capturedImage.src;
 
-
-            const blob = await (await fetch(imageDataUrl)).blob();
-
-            const formData = new FormData();
-            formData.append('image', blob, 'capture.png');
-
+            
+            shareButton.disabled = true;
+            shareButton.textContent = 'Sharing...';  
 
             try {
+                const blob = await (await fetch(imageDataUrl)).blob();
+
+                const formData = new FormData();
+                formData.append('image', blob, 'capture.png');
 
                 const response = await axios.post(BASEURL + '/api/generate-qr', formData, {
                     headers: {
@@ -419,16 +436,21 @@
                     }
                 });
 
-
                 const qrCodeUrl = response.data.qrImageUrl;
 
-
-                document.getElementById('qrCodeImage').src = BASEURL + qrCodeUrl;
+                
+                document.getElementById('qrCodeImage').src = qrCodeUrl;
                 document.getElementById('qrModal').style.display = 'flex';
+
             } catch (error) {
                 console.error('Error uploading image:', error);
+                
+                alert('Error during upload. Please try again.');
+            } finally {
+                
+                shareButton.disabled = false;
+                shareButton.textContent = 'Share';  
             }
-            
         });
 
         document.getElementById('closeQrButton').addEventListener('click', () => {
@@ -438,41 +460,41 @@
         document.getElementById('printButton').addEventListener('click', () => {
             const imageUrl = capturedImage.src;
 
-            
+
             const printWindow = window.open('', '_blank');
             printWindow.document.open();
             printWindow.document.write(`
-        <html>
-            <head>
-                <title>Print Captured Image</title>
-                <style>
-                    @media print {
-                        body { 
-                            margin: 0; 
-                            padding: 0; 
-                            display: flex;
-                            justify-content: center; 
-                            align-items: center;
-                            height: 100vh; /* Ensure body height fills the page */
+            <html>
+                <head>
+                    <title>Print Captured Image</title>
+                    <style>
+                        @media print {
+                            body {
+                                margin: 0;
+                                padding: 0;
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                height: 100vh; /* Ensure body height fills the page */
+                            }
+                            img {
+                                width: auto;
+                                height: 100%;
+                                page-break-before: avoid;
+                                display: block;
+                            }
                         }
-                        img { 
-                            width: auto; 
-                            height: 100%; 
-                            page-break-before: avoid; 
-                            display: block;
+                        @page {
+                            size: auto;  /* auto is the initial value */
+                            margin: 0mm; /* this affects the margin in the printer settings */
                         }
-                    }
-                    @page {
-                        size: auto;  /* auto is the initial value */
-                        margin: 0mm; /* this affects the margin in the printer settings */
-                    }
-                </style>
-            </head>
-            <body>
-                <img src="${imageUrl}" alt="Captured Image" />
-            </body>
-        </html>
-    `);
+                    </style>
+                </head>
+                <body>
+                    <img src="${imageUrl}" alt="Captured Image" />
+                </body>
+            </html>
+        `);
             printWindow.document.close();
             printWindow.focus();
             setTimeout(() => {
@@ -506,10 +528,10 @@
 
             if (overlaySelection.style.display === 'flex') {
                 overlaySelection.style.display = 'none';
-                showOverlayButton.textContent = 'Show Selections'; 
+                showOverlayButton.textContent = 'Show Selections';
             } else {
                 overlaySelection.style.display = 'flex';
-                showOverlayButton.textContent = 'Hide Selections'; 
+                showOverlayButton.textContent = 'Hide Selections';
             }
         }
 
