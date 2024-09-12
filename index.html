@@ -19,8 +19,10 @@
 
         #container {
             position: relative;
-            width: 1010px;
-            height: 1796px;
+            width: 1080px;
+            height: 1920px;
+            /*width: 1010px;
+            height: 1796px;*/
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             border-radius: 10px;
             overflow: hidden;
@@ -251,23 +253,139 @@
                 background-color: #cc0000;
                 box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
             }
+
+
+
+
+        #introOverlay {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            z-index: 1000;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        #introContent {
+            max-width: 600px;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.7); /*88 88 90*/
+            border-radius: 10px;
+        }
+
+            #introContent h1 {
+                font-size: 28px;
+                margin-bottom: 10px;
+            }
+
+            #introContent p {
+                font-size: 18px;
+                margin-bottom: 20px;
+            }
+
+        #startButton {
+            padding: 12px 25px;
+            background-color: #109A7B;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+            #startButton:hover {
+                background-color: darkgreen;
+            }
+
+
+
+        #thankYouPopup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            z-index: 1001;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        #thankYouContent {
+            max-width: 500px;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+        }
+
+            #thankYouContent h2 {
+                font-size: 28px;
+                margin-bottom: 10px;
+            }
+
+            #thankYouContent p {
+                font-size: 18px;
+                margin-bottom: 20px;
+            }
+
+        #closeThankYouButton {
+            padding: 12px 25px;
+            background-color: #109A7B;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+            #closeThankYouButton:hover {
+                background-color: darkgreen;
+            }
     </style>
 </head>
 
 <body>
+    <div id="introOverlay">
+        <div id="introContent">
+            <h1>Capture the moment with your favourite cricketer.</h1>
+            <p>Scan the QR code to keep the memory.</p>
+            <button id="startButton" class="button">Start Experience</button>
+        </div>
+    </div>
+    <div id="thankYouPopup">
+        <div id="thankYouContent">
+            <h2>Thank You!</h2>
+            <p>We hope you enjoyed the experience. Have a great day!</p>
+            <button id="closeThankYouButton" class="button">Close</button>
+        </div>
+    </div>
     <div id="container">
         <video id="webcam" autoplay playsinline></video>
         <canvas id="canvas"></canvas>
-        <img id="overlay" src="../Photos/Sachintest1.png" alt="Overlay Image" /><!--Sachin.png-->
+        <img id="overlay" src="../Photos/Sachin1080.png" alt="Overlay Image" /><!--Sachin.png-->
         <div id="countdown"></div>
 
 
+
         <div id="overlaySelection" style="display: flex;">
-            <img class="overlayOption selected" src="../Photos/Sachintest1.png" data-overlay="../Photos/Sachintest1.png"
+            <img  class="overlayOption selected" src="../Photos/Sachin1080.png" data-overlay="../Photos/Sachin1080.png" data-id="0"
                  alt="Overlay 1"><!--Sachin.png-->
-            <img class="overlayOption" src="../Photos/Rohithalf.png" data-overlay="../Photos/Rohithalf.png"
+            <img id="1" class="overlayOption" src="../Photos/Rohit1080.png" data-overlay="../Photos/Rohit1080.png" data-id="1"
                  alt="Overlay 2"><!--RohitovlayImg-->
-            <img class="overlayOption" src="../Photos/Dhonihalf.png" data-overlay="../Photos/DhoniovlayImg.png"
+            <img id="2" class="overlayOption" src="../Photos/Dhoni1080.png" data-overlay="../Photos/Dhoni1080.png" data-id="2"
                  alt="Overlay 3"><!--DhoniovlayImg-->
         </div>
 
@@ -298,6 +416,7 @@
 
     <script>
         let isCapturing = false;
+        let selectedOverlayId = 1;
         const ovlayButton = document.getElementById('showOverlayButton');
 
         async function startWebcam() {
@@ -312,8 +431,10 @@
                 });
                 video.srcObject = stream;
 
-                canvas.width = 1010;
-                canvas.height = 1796;
+                canvas.width = 1080;
+                canvas.height = 1920;
+                //canvas.width = 1010;
+                //canvas.height = 1796;
 
                 video.addEventListener('loadedmetadata', () => {
                     video.width = video.videoWidth;
@@ -420,15 +541,16 @@
             const BASEURL = 'https://192.168.29.177:5000';
             const imageDataUrl = capturedImage.src;
 
-            
+
             shareButton.disabled = true;
-            shareButton.textContent = 'Sharing...';  
+            shareButton.textContent = 'Sharing...';
 
             try {
                 const blob = await (await fetch(imageDataUrl)).blob();
 
                 const formData = new FormData();
                 formData.append('image', blob, 'capture.png');
+                formData.append('mascot', selectedOverlayId);
 
                 const response = await axios.post(BASEURL + '/api/generate-qr', formData, {
                     headers: {
@@ -438,63 +560,65 @@
 
                 const qrCodeUrl = response.data.qrImageUrl;
 
-                
+
                 document.getElementById('qrCodeImage').src = qrCodeUrl;
                 document.getElementById('qrModal').style.display = 'flex';
 
             } catch (error) {
                 console.error('Error uploading image:', error);
-                
+
                 alert('Error during upload. Please try again.');
             } finally {
-                
+
                 shareButton.disabled = false;
-                shareButton.textContent = 'Share';  
+                shareButton.textContent = 'Share';
             }
         });
 
         document.getElementById('closeQrButton').addEventListener('click', () => {
             document.getElementById('qrModal').style.display = 'none';
+            document.getElementById('thankYouPopup').style.display = 'flex'; 
         });
 
         document.getElementById('printButton').addEventListener('click', () => {
             const imageUrl = capturedImage.src;
 
+            document.getElementById('thankYouPopup').style.display = 'flex';
 
             const printWindow = window.open('', '_blank');
             printWindow.document.open();
             printWindow.document.write(`
-            <html>
-                <head>
-                    <title>Print Captured Image</title>
-                    <style>
-                        @media print {
-                            body {
-                                margin: 0;
-                                padding: 0;
-                                display: flex;
-                                justify-content: center;
-                                align-items: center;
-                                height: 100vh; /* Ensure body height fills the page */
-                            }
-                            img {
-                                width: auto;
-                                height: 100%;
-                                page-break-before: avoid;
-                                display: block;
-                            }
-                        }
-                        @page {
-                            size: auto;  /* auto is the initial value */
-                            margin: 0mm; /* this affects the margin in the printer settings */
-                        }
-                    </style>
-                </head>
-                <body>
-                    <img src="${imageUrl}" alt="Captured Image" />
-                </body>
-            </html>
-        `);
+                    <html>
+                        <head>
+                            <title>Print Captured Image</title>
+                            <style>
+                                @media print {
+                                    body {
+                                        margin: 0;
+                                        padding: 0;
+                                        display: flex;
+                                        justify-content: center;
+                                        align-items: center;
+                                        height: 100vh; /* Ensure body height fills the page */
+                                    }
+                                    img {
+                                        width: auto;
+                                        height: 100%;
+                                        page-break-before: avoid;
+                                        display: block;
+                                    }
+                                }
+                                @page {
+                                    size: auto;  /* auto is the initial value */
+                                    margin: 0mm; /* this affects the margin in the printer settings */
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <img src="${imageUrl}" alt="Captured Image" />
+                        </body>
+                    </html>
+                `);
             printWindow.document.close();
             printWindow.focus();
             setTimeout(() => {
@@ -516,6 +640,8 @@
                     overlay.classList.add('selected');
                     const selectedOverlaySrc = overlay.getAttribute('data-overlay');
                     overlayElement.src = selectedOverlaySrc;
+
+                    selectedOverlayId = overlay.getAttribute('data-id');
                 });
             });
         }
@@ -534,6 +660,19 @@
                 showOverlayButton.textContent = 'Hide Selections';
             }
         }
+
+        document.getElementById('startButton').addEventListener('click', () => {
+            document.getElementById('introOverlay').style.display = 'none';
+            document.getElementById('container').style.display = 'block'; 
+            startWebcam(); 
+        });
+
+        document.getElementById('closeThankYouButton').addEventListener('click', () => {
+            document.getElementById('thankYouPopup').style.display = 'none'; 
+        });
+
+        document.getElementById('container').style.display = 'none';
+
 
         document.getElementById('captureButton').addEventListener('click', startCapture);
         document.getElementById('showOverlayButton').addEventListener('click', toggleOverlaySelection);
