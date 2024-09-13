@@ -101,7 +101,7 @@
             display: flex;
             gap: 10px;
             z-index: 5;
-            background: rgb(0, 0, 0, 0.1)
+            background: rgb(0, 0, 0, 0.1);
         }
 
         .overlayOption {
@@ -119,7 +119,6 @@
 
         .selected {
             border-color: #007BFF;
-            
         }
 
         #modal {
@@ -183,6 +182,7 @@
                 font-size: 18px;
                 transition: background-color 0.3s, box-shadow 0.3s;
             }
+
         .modal-btn-container {
             display: flex;
             justify-content: center;
@@ -200,7 +200,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.8); 
+            background-color: rgba(0, 0, 0, 0.8);
             justify-content: center;
             align-items: center;
             z-index: 1000;
@@ -211,7 +211,7 @@
         }
 
         #qrModalContent {
-            background-color: #33333373; 
+            background-color: #33333373;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
@@ -375,17 +375,17 @@
     <div id="container">
         <video id="webcam" autoplay playsinline></video>
         <canvas id="canvas"></canvas>
-        <img id="overlay" src="../Photos/Sachin1080.png" alt="Overlay Image" /><!--Sachin.png-->
+        <img id="overlay" src="../Photos/Sachinnew1080.png" alt="Overlay Image" /><!--Sachin.png-->
         <div id="countdown"></div>
 
 
 
         <div id="overlaySelection" style="display: flex;">
-            <img  class="overlayOption selected" src="../Photos/Sachin1080.png" data-overlay="../Photos/Sachin1080.png" data-id="0"
+            <img class="overlayOption selected" src="../Photos/Sachinnew1080.png" data-overlay="../Photos/Sachinnew1080.png" data-id="0"
                  alt="Overlay 1"><!--Sachin.png-->
-            <img id="1" class="overlayOption" src="../Photos/Rohit1080.png" data-overlay="../Photos/Rohit1080.png" data-id="1"
+            <img id="1" class="overlayOption" src="../Photos/Rohitnew1080.png" data-overlay="../Photos/Rohitnew1080.png" data-id="1"
                  alt="Overlay 2"><!--RohitovlayImg-->
-            <img id="2" class="overlayOption" src="../Photos/Dhoni1080.png" data-overlay="../Photos/Dhoni1080.png" data-id="2"
+            <img id="2" class="overlayOption" src="../Photos/Dhoninew1080.png" data-overlay="../Photos/Dhoninew1080.png" data-id="2"
                  alt="Overlay 3"><!--DhoniovlayImg-->
         </div>
 
@@ -427,12 +427,13 @@
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'environment' }
+                    video: { width: { ideal: 2560 }, height: { ideal: 1440 }, facingMode: 'environment' }
+
                 });
                 video.srcObject = stream;
 
-                canvas.width = 1080;
-                canvas.height = 1920;
+                canvas.width = 1440;
+                canvas.height = 2560;
                 //canvas.width = 1010;
                 //canvas.height = 1796;
 
@@ -450,13 +451,25 @@
                         const canvasAspect = canvas.width / canvas.height;
                         let drawWidth, drawHeight;
 
-                        drawHeight = canvas.height;
-                        drawWidth = drawHeight * videoAspect;
+                        // Adjust video size to cover the canvas while maintaining aspect ratio
+                        if (videoAspect > canvasAspect) {
+                            // Video is wider relative to the height of the canvas
+                            drawWidth = canvas.height * videoAspect;
+                            drawHeight = canvas.height;
+                        } else {
+                            // Video is taller relative to the width of the canvas
+                            drawWidth = canvas.width;
+                            drawHeight = canvas.width / videoAspect;
+                        }
 
+                        // Center the video and adjust for rotation
                         ctx.translate(canvas.width / 2, canvas.height / 2);
                         ctx.rotate(90 * Math.PI / 180);
-                        ctx.scale(1, -1);
+                        ctx.scale(1, -1); // Flip vertically to match environment camera
+
+                        // Draw video image
                         ctx.drawImage(video, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+
                         ctx.restore();
                     }
                     requestAnimationFrame(draw);
@@ -485,7 +498,7 @@
             const overlay = document.getElementById('overlay');
             const captureButton = document.getElementById('captureButton');
 
-            let countdown = 15; //15;
+            let countdown = 1; //15;
             captureButton.disabled = true;
             ovlayButton.disabled = true;
 
@@ -503,32 +516,48 @@
 
 
         function captureImage() {
+            const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
+            const video = document.getElementById('webcam');
+            const overlay = document.getElementById('overlay');
 
+            // Get the current video dimensions
+            const videoWidth = video.videoWidth;
+            const videoHeight = video.videoHeight;
+
+            // Resize the canvas to match the desired resolution (2K)
+            const canvasWidth = 1440;
+            const canvasHeight = 2560;
+            const videoAspect = videoWidth / videoHeight;
+            const canvasAspect = canvasWidth / canvasHeight;
+
+            let drawWidth, drawHeight;
+            if (videoAspect > canvasAspect) {
+                drawWidth = canvasHeight * videoAspect;
+                drawHeight = canvasHeight;
+            } else {
+                drawWidth = canvasWidth;
+                drawHeight = canvasWidth / videoAspect;
+            }
+
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
 
             ctx.save();
             ctx.translate(canvas.width / 2, canvas.height / 2);
             ctx.rotate(90 * Math.PI / 180);
             ctx.scale(1, -1);
-            ctx.drawImage(document.getElementById('webcam'), canvas.height, canvas.width);
+            ctx.drawImage(video, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
             ctx.restore();
 
-
+            // Draw the overlay on top of the video frame
             ctx.drawImage(overlay, 0, 0, canvas.width, canvas.height);
 
-
-            const imageDataUrl = canvas.toDataURL('image/png');
-            capturedImage.src = imageDataUrl;
-
-
-            modal.style.display = 'flex';
-            modal.style.flexWrap = 'wrap';
-            modal.style.flexDirection = 'column';
-
-            const captureButton = document.getElementById('captureButton');
-            captureButton.disabled = false;
-            ovlayButton.disabled = false;
-            isCapturing = false;
+            // Convert canvas to image
+            const image = canvas.toDataURL('image/jpeg');
+            document.getElementById('capturedImage').src = image;
+            document.getElementById('modal').style.display = 'flex';
+            document.getElementById('modal').style.flexDirection = 'column';
         }
 
         document.getElementById('closeButton').addEventListener('click', () => {
@@ -577,7 +606,7 @@
 
         document.getElementById('closeQrButton').addEventListener('click', () => {
             document.getElementById('qrModal').style.display = 'none';
-            document.getElementById('thankYouPopup').style.display = 'flex'; 
+            document.getElementById('thankYouPopup').style.display = 'flex';
         });
 
         document.getElementById('printButton').addEventListener('click', () => {
@@ -588,37 +617,37 @@
             const printWindow = window.open('', '_blank');
             printWindow.document.open();
             printWindow.document.write(`
-                    <html>
-                        <head>
-                            <title>Print Captured Image</title>
-                            <style>
-                                @media print {
-                                    body {
-                                        margin: 0;
-                                        padding: 0;
-                                        display: flex;
-                                        justify-content: center;
-                                        align-items: center;
-                                        height: 100vh; /* Ensure body height fills the page */
+                        <html>
+                            <head>
+                                <title>Print Captured Image</title>
+                                <style>
+                                    @media print {
+                                        body {
+                                            margin: 0;
+                                            padding: 0;
+                                            display: flex;
+                                            justify-content: center;
+                                            align-items: center;
+                                            height: 100vh; /* Ensure body height fills the page */
+                                        }
+                                        img {
+                                            width: auto;
+                                            height: 100%;
+                                            page-break-before: avoid;
+                                            display: block;
+                                        }
                                     }
-                                    img {
-                                        width: auto;
-                                        height: 100%;
-                                        page-break-before: avoid;
-                                        display: block;
+                                    @page {
+                                        size: auto;  /* auto is the initial value */
+                                        margin: 0mm; /* this affects the margin in the printer settings */
                                     }
-                                }
-                                @page {
-                                    size: auto;  /* auto is the initial value */
-                                    margin: 0mm; /* this affects the margin in the printer settings */
-                                }
-                            </style>
-                        </head>
-                        <body>
-                            <img src="${imageUrl}" alt="Captured Image" />
-                        </body>
-                    </html>
-                `);
+                                </style>
+                            </head>
+                            <body>
+                                <img src="${imageUrl}" alt="Captured Image" />
+                            </body>
+                        </html>
+                    `);
             printWindow.document.close();
             printWindow.focus();
             setTimeout(() => {
@@ -663,12 +692,12 @@
 
         document.getElementById('startButton').addEventListener('click', () => {
             document.getElementById('introOverlay').style.display = 'none';
-            document.getElementById('container').style.display = 'block'; 
-            startWebcam(); 
+            document.getElementById('container').style.display = 'block';
+            startWebcam();
         });
 
         document.getElementById('closeThankYouButton').addEventListener('click', () => {
-            document.getElementById('thankYouPopup').style.display = 'none'; 
+            document.getElementById('thankYouPopup').style.display = 'none';
         });
 
         document.getElementById('container').style.display = 'none';
