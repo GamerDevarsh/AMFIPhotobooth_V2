@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AMFI Photobooth</title>
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <style>
         body {
             margin: 0;
@@ -354,10 +353,47 @@
             #closeThankYouButton:hover {
                 background-color: darkgreen;
             }
+
+
+
+
+
+
+        .loader {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            width: 60px;
+            height: 60px;
+            margin: -30px 0 0 -30px; /* Offset to center the loader */
+            border: 6px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 6px solid #3498db;
+            animation: spin 1s linear infinite;
+            z-index: 9999; /* High z-index */
+            background: transparent;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Optional: disable pointer events when loader is active */
+        body.loading {
+            pointer-events: none;
+            opacity: 0.5;
+        }
     </style>
 </head>
 
 <body>
+    <div id="loader" class="loader" style="display: none;"></div>
     <div id="introOverlay">
         <div id="introContent">
             <h1>Capture the moment with your favourite cricketer.</h1>
@@ -428,14 +464,11 @@
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: { width: { ideal: 2560 }, height: { ideal: 1440 }, facingMode: 'environment' }
-
                 });
                 video.srcObject = stream;
 
                 canvas.width = 1440;
                 canvas.height = 2560;
-                //canvas.width = 1010;
-                //canvas.height = 1796;
 
                 video.addEventListener('loadedmetadata', () => {
                     video.width = video.videoWidth;
@@ -451,23 +484,18 @@
                         const canvasAspect = canvas.width / canvas.height;
                         let drawWidth, drawHeight;
 
-                        // Adjust video size to cover the canvas while maintaining aspect ratio
                         if (videoAspect > canvasAspect) {
-                            // Video is wider relative to the height of the canvas
                             drawWidth = canvas.height * videoAspect;
                             drawHeight = canvas.height;
                         } else {
-                            // Video is taller relative to the width of the canvas
                             drawWidth = canvas.width;
                             drawHeight = canvas.width / videoAspect;
                         }
 
-                        // Center the video and adjust for rotation
                         ctx.translate(canvas.width / 2, canvas.height / 2);
                         ctx.rotate(90 * Math.PI / 180);
-                        ctx.scale(1, -1); // Flip vertically to match environment camera
+                        ctx.scale(1, -1);
 
-                        // Draw video image
                         ctx.drawImage(video, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
 
                         ctx.restore();
@@ -481,7 +509,6 @@
         }
 
         function startCapture() {
-
             const overlaySelection = document.getElementById('overlaySelection');
 
             if (overlaySelection.style.display === 'flex') {
@@ -498,7 +525,7 @@
             const overlay = document.getElementById('overlay');
             const captureButton = document.getElementById('captureButton');
 
-            let countdown = 1; //15;
+            let countdown = 1;
             captureButton.disabled = true;
             ovlayButton.disabled = true;
 
@@ -514,18 +541,15 @@
             }, 1000);
         }
 
-
         function captureImage() {
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
             const video = document.getElementById('webcam');
             const overlay = document.getElementById('overlay');
 
-            // Get the current video dimensions
             const videoWidth = video.videoWidth;
             const videoHeight = video.videoHeight;
 
-            // Resize the canvas to match the desired resolution (2K)
             const canvasWidth = 1440;
             const canvasHeight = 2560;
             const videoAspect = videoWidth / videoHeight;
@@ -550,10 +574,8 @@
             ctx.drawImage(video, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
             ctx.restore();
 
-            // Draw the overlay on top of the video frame
             ctx.drawImage(overlay, 0, 0, canvas.width, canvas.height);
 
-            // Convert canvas to image
             const image = canvas.toDataURL('image/jpeg');
             document.getElementById('capturedImage').src = image;
             document.getElementById('modal').style.display = 'flex';
@@ -566,48 +588,71 @@
         }
 
         document.getElementById('closeButton').addEventListener('click', () => {
-            modal.style.display = 'none';
+            document.getElementById('modal').style.display = 'none';
         });
 
-
-        document.getElementById('shareButton').addEventListener('click', async () => {
+        document.getElementById('shareButton').addEventListener('click', () => {
             const shareButton = document.getElementById('shareButton');
-            const BASEURL = 'https://192.168.29.177:5000';
+            const BASEURL = 'https://192.168.1.161:5001';
             const imageDataUrl = capturedImage.src;
-
 
             shareButton.disabled = true;
             shareButton.textContent = 'Sharing...';
 
-            try {
-                const blob = await (await fetch(imageDataUrl)).blob();
+            document.getElementById('loader').style.display = 'block';
+            document.body.classList.add('loading');
 
-                const formData = new FormData();
-                formData.append('image', blob, 'capture.png');
-                formData.append('mascot', selectedOverlayId);
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', BASEURL + '/api/generate-qr', true);
+            xhr.setRequestHeader('Accept', 'application/json');
 
-                const response = await axios.post(BASEURL + '/api/generate-qr', formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                });
+            const blob = new Blob([dataURLtoBlob(imageDataUrl)], { type: 'image/jpeg' });
+            const formData = new FormData();
+            formData.append('image', blob, 'capture.jpg');
+            formData.append('mascot', selectedOverlayId);
 
-                const qrCodeUrl = response.data.qrImageUrl;
+            xhr.onload = () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    const response = JSON.parse(xhr.responseText);
+                    const qrCodeUrl = response.qrImageUrl;
 
-
-                document.getElementById('qrCodeImage').src = qrCodeUrl;
-                document.getElementById('qrModal').style.display = 'flex';
-
-            } catch (error) {
-                console.error('Error uploading image:', error);
-
-                alert('Error during upload. Please try again.');
-            } finally {
-
+                    document.getElementById('qrCodeImage').src = qrCodeUrl;
+                    document.getElementById('qrModal').style.display = 'flex';
+                } else {
+                    console.error('Error uploading image:', xhr.statusText);
+                    alert('Error during upload. Please try again.');
+                }
                 shareButton.disabled = false;
                 shareButton.textContent = 'Share';
-            }
+                document.getElementById('loader').style.display = 'none';
+                document.body.classList.remove('loading');
+            };
+
+            xhr.onerror = () => {
+                console.error('Error uploading image:', xhr.statusText);
+                alert('Error during upload. Please try again.');
+                shareButton.disabled = false;
+                shareButton.textContent = 'Share';
+                document.getElementById('loader').style.display = 'none';
+                document.body.classList.remove('loading');
+            };
+
+            xhr.send(formData);
         });
+
+        function dataURLtoBlob(dataURL) {
+            const [header, data] = dataURL.split(',');
+            const mime = header.split(':')[1].split(';')[0];
+            const byteString = atob(data);
+            const arrayBuffer = new ArrayBuffer(byteString.length);
+            const uint8Array = new Uint8Array(arrayBuffer);
+
+            for (let i = 0; i < byteString.length; i++) {
+                uint8Array[i] = byteString.charCodeAt(i);
+            }
+
+            return new Blob([arrayBuffer], { type: mime });
+        }
 
         document.getElementById('closeQrButton').addEventListener('click', () => {
             document.getElementById('qrModal').style.display = 'none';
@@ -622,37 +667,37 @@
             const printWindow = window.open('', '_blank');
             printWindow.document.open();
             printWindow.document.write(`
-                        <html>
-                            <head>
-                                <title>Print Captured Image</title>
-                                <style>
-                                    @media print {
-                                        body {
-                                            margin: 0;
-                                            padding: 0;
-                                            display: flex;
-                                            justify-content: center;
-                                            align-items: center;
-                                            height: 100vh; /* Ensure body height fills the page */
-                                        }
-                                        img {
-                                            width: auto;
-                                            height: 100%;
-                                            page-break-before: avoid;
-                                            display: block;
-                                        }
-                                    }
-                                    @page {
-                                        size: auto;  /* auto is the initial value */
-                                        margin: 0mm; /* this affects the margin in the printer settings */
-                                    }
-                                </style>
-                            </head>
-                            <body>
-                                <img src="${imageUrl}" alt="Captured Image" />
-                            </body>
-                        </html>
-                    `);
+                <html>
+                    <head>
+                        <title>Print Captured Image</title>
+                        <style>
+                            @media print {
+                                body {
+                                    margin: 0;
+                                    padding: 0;
+                                    display: flex;
+                                    justify-content: center;
+                                    align-items: center;
+                                    height: 100vh;
+                                }
+                                img {
+                                    width: auto;
+                                    height: 100%;
+                                    page-break-before: avoid;
+                                    display: block;
+                                }
+                            }
+                            @page {
+                                size: auto;
+                                margin: 0mm;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <img src="${imageUrl}" alt="Captured Image" />
+                    </body>
+                </html>
+            `);
             printWindow.document.close();
             printWindow.focus();
             setTimeout(() => {
@@ -660,7 +705,6 @@
                 printWindow.close();
             }, 500);
         });
-        //}
 
         function handleOverlaySelection() {
             const overlays = document.querySelectorAll('.overlayOption');
@@ -706,7 +750,6 @@
         });
 
         document.getElementById('container').style.display = 'none';
-
 
         document.getElementById('captureButton').addEventListener('click', startCapture);
         document.getElementById('showOverlayButton').addEventListener('click', toggleOverlaySelection);
