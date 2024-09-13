@@ -558,6 +558,11 @@
             document.getElementById('capturedImage').src = image;
             document.getElementById('modal').style.display = 'flex';
             document.getElementById('modal').style.flexDirection = 'column';
+
+            const captureButton = document.getElementById('captureButton');
+            captureButton.disabled = false;
+            ovlayButton.disabled = false;
+            isCapturing = false;
         }
 
         document.getElementById('closeButton').addEventListener('click', () => {
