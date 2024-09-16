@@ -18,14 +18,17 @@
 
         #container {
             position: relative;
-            width: 1080px;
-            height: 1920px;
+            width: 1920px;
+            height: 1080px;
             /*width: 1010px;
             height: 1796px;*/
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             border-radius: 10px;
             overflow: hidden;
             background: #fff;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
         }
 
         #webcam {
@@ -40,12 +43,10 @@
 
         #overlay {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
             object-fit: cover;
             pointer-events: none;
+            transform: rotate(270deg);
+            transform-origin: center;
         }
 
         #countdown {
@@ -66,8 +67,8 @@
 
         #buttonContainer {
             position: absolute;
-            bottom: 50px;
-            left: 50%;
+            top: 50%;
+            left: 80%;
             transform: translateX(-50%);
             display: flex;
             gap: 20px;
@@ -75,6 +76,7 @@
         }
 
         .button {
+            width: 195px !important;
             padding: 15px 30px;
             background-color: #007BFF;
             color: #fff;
@@ -94,8 +96,8 @@
         #overlaySelection {
             display: none;
             position: absolute;
-            bottom: 120px;
-            left: 50%;
+            top: 45%;
+            left: 75%;
             transform: translateX(-50%);
             display: flex;
             gap: 10px;
@@ -389,51 +391,63 @@
             pointer-events: none;
             opacity: 0.5;
         }
+
+        .rotate-90 {
+            transform: rotate(270deg) !important;
+            transform-origin: center !important;
+        }
+
+        #capturedImage {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
     </style>
 </head>
 
 <body>
     <div id="loader" class="loader" style="display: none;"></div>
-    <div id="introOverlay">
-        <div id="introContent">
+    <div id="introOverlay" >
+        <div id="introContent" class="rotate-90">
             <h1>Capture the moment with your favourite cricketer.</h1>
             <p>Scan the QR code to keep the memory.</p>
             <button id="startButton" class="button">Start Experience</button>
         </div>
     </div>
     <div id="thankYouPopup">
-        <div id="thankYouContent">
+        <div id="thankYouContent" class="rotate-90">
             <h2>Thank You!</h2>
             <p>We hope you enjoyed the experience. Have a great day!</p>
             <button id="closeThankYouButton" class="button">Close</button>
         </div>
     </div>
-    <div id="container">
+    <div id="container" >
         <video id="webcam" autoplay playsinline></video>
         <canvas id="canvas"></canvas>
         <img id="overlay" src="../Photos/Sachinnew1080.png" alt="Overlay Image" /><!--Sachin.png-->
-        <div id="countdown"></div>
+        <div id="countdown" class="rotate-90"></div>
+        <div>
+            <div id="overlaySelection" class="rotate-90" style="display: flex;">
+                <img class="overlayOption selected" src="../Photos/Sachinnew1080.png" data-overlay="../Photos/Sachinnew1080.png" data-id="0"
+                     alt="Overlay 1"><!--Sachin.png-->
+                <img id="1" class="overlayOption" src="../Photos/Rohitnew1080.png" data-overlay="../Photos/Rohitnew1080.png" data-id="1"
+                     alt="Overlay 2"><!--RohitovlayImg-->
+                <img id="2" class="overlayOption" src="../Photos/Dhoninew1080.png" data-overlay="../Photos/Dhoninew1080.png" data-id="2"
+                     alt="Overlay 3"><!--DhoniovlayImg-->
+            </div>
 
-
-
-        <div id="overlaySelection" style="display: flex;">
-            <img class="overlayOption selected" src="../Photos/Sachinnew1080.png" data-overlay="../Photos/Sachinnew1080.png" data-id="0"
-                 alt="Overlay 1"><!--Sachin.png-->
-            <img id="1" class="overlayOption" src="../Photos/Rohitnew1080.png" data-overlay="../Photos/Rohitnew1080.png" data-id="1"
-                 alt="Overlay 2"><!--RohitovlayImg-->
-            <img id="2" class="overlayOption" src="../Photos/Dhoninew1080.png" data-overlay="../Photos/Dhoninew1080.png" data-id="2"
-                 alt="Overlay 3"><!--DhoniovlayImg-->
+            <div id="buttonContainer" class="rotate-90">
+                <button id="showOverlayButton" class="button">Hide Selections</button>
+                <button id="captureButton" class="button">Start Capture</button>
+            </div>
         </div>
-
-        <div id="buttonContainer">
-            <button id="showOverlayButton" class="button">Hide Selections</button>
-            <button id="captureButton" class="button">Start Capture</button>
-        </div>
+        
     </div>
 
     <div id="modal">
         <img id="capturedImage" src="" alt="Captured Image" />
-        <div class="modal-btn-container">
+        <div class="modal-btn-container rotate-90">
 
             <button id="closeButton">Recapture</button>
             <button id="shareButton">Share</button>
@@ -443,7 +457,7 @@
     </div>
 
     <div id="qrModal" style="display: none;">
-        <div id="qrModalContent">
+        <div id="qrModalContent" class="rotate-90">
             <h2>Your QR Code</h2>
             <img id="qrCodeImage" src="" alt="QR Code" />
             <button id="closeQrButton">Close</button>
@@ -458,17 +472,18 @@
         async function startWebcam() {
             const video = document.getElementById('webcam');
             const canvas = document.getElementById('canvas');
+            const overlay = document.getElementById("overlay");
             const ctx = canvas.getContext('2d');
             const threshold = 200;
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { width: { ideal: 2560 }, height: { ideal: 1440 }, facingMode: 'environment' }
+                    video: { width: { ideal: 1440 }, height: { ideal: 2560 }, facingMode: 'environment' }
                 });
                 video.srcObject = stream;
 
-                canvas.width = 1440;
-                canvas.height = 2560;
+                canvas.width = 2560;
+                canvas.height = 1440;
 
                 video.addEventListener('loadedmetadata', () => {
                     video.width = video.videoWidth;
@@ -493,8 +508,7 @@
                         }
 
                         ctx.translate(canvas.width / 2, canvas.height / 2);
-                        ctx.rotate(90 * Math.PI / 180);
-                        ctx.scale(1, -1);
+                        ctx.scale(-1, 1);
 
                         ctx.drawImage(video, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
 
@@ -525,7 +539,7 @@
             const overlay = document.getElementById('overlay');
             const captureButton = document.getElementById('captureButton');
 
-            let countdown = 1;
+            let countdown = 1; //15
             captureButton.disabled = true;
             ovlayButton.disabled = true;
 
@@ -550,12 +564,16 @@
             const videoWidth = video.videoWidth;
             const videoHeight = video.videoHeight;
 
-            const canvasWidth = 1440;
-            const canvasHeight = 2560;
+            const canvasWidth = 1920;
+            const canvasHeight = 1080;
+
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+
             const videoAspect = videoWidth / videoHeight;
             const canvasAspect = canvasWidth / canvasHeight;
-
             let drawWidth, drawHeight;
+
             if (videoAspect > canvasAspect) {
                 drawWidth = canvasHeight * videoAspect;
                 drawHeight = canvasHeight;
@@ -564,22 +582,27 @@
                 drawHeight = canvasWidth / videoAspect;
             }
 
-            canvas.width = canvasWidth;
-            canvas.height = canvasHeight;
+            // Video feed
+            ctx.save();
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(0);  
+            ctx.scale(-1, 1);  
+            ctx.drawImage(video, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+            ctx.restore();  
+
+            // Overlay image
+            drawWidth = 1080;
+            drawHeight = 1920;
 
             ctx.save();
             ctx.translate(canvas.width / 2, canvas.height / 2);
-            ctx.rotate(90 * Math.PI / 180);
-            ctx.scale(1, -1);
-            ctx.drawImage(video, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+            ctx.rotate(90 * Math.PI / -180);
+            ctx.drawImage(overlay, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
             ctx.restore();
-
-            ctx.drawImage(overlay, 0, 0, canvas.width, canvas.height);
 
             const image = canvas.toDataURL('image/jpeg');
             document.getElementById('capturedImage').src = image;
             document.getElementById('modal').style.display = 'flex';
-            document.getElementById('modal').style.flexDirection = 'column';
 
             const captureButton = document.getElementById('captureButton');
             captureButton.disabled = false;
@@ -593,8 +616,8 @@
 
         document.getElementById('shareButton').addEventListener('click', () => {
             const shareButton = document.getElementById('shareButton');
-            const BASEURL = 'https://192.168.1.161:5001';
-            const imageDataUrl = capturedImage.src;
+            const BASEURL = 'https://192.168.1.158:5000';
+            const imageDataUrl = document.getElementById('capturedImage').src;
 
             shareButton.disabled = true;
             shareButton.textContent = 'Sharing...';
@@ -602,43 +625,67 @@
             document.getElementById('loader').style.display = 'block';
             document.body.classList.add('loading');
 
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', BASEURL + '/api/generate-qr', true);
-            xhr.setRequestHeader('Accept', 'application/json');
+            
+            const hiddenCanvas = document.createElement('canvas');
+            const hiddenCtx = hiddenCanvas.getContext('2d');
+            const image = new Image();
 
-            const blob = new Blob([dataURLtoBlob(imageDataUrl)], { type: 'image/jpeg' });
-            const formData = new FormData();
-            formData.append('image', blob, 'capture.jpg');
-            formData.append('mascot', selectedOverlayId);
+            image.onload = () => {
+                
+                hiddenCanvas.width = image.height;
+                hiddenCanvas.height = image.width;
 
-            xhr.onload = () => {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    const response = JSON.parse(xhr.responseText);
-                    const qrCodeUrl = response.qrImageUrl;
+                
+                hiddenCtx.save();
+                hiddenCtx.translate(hiddenCanvas.width / 2, hiddenCanvas.height / 2);
+                hiddenCtx.rotate(90 * Math.PI / 180); // Rotate -90 degrees
+                hiddenCtx.drawImage(image, -image.width / 2, -image.height / 2);
+                hiddenCtx.restore();
 
-                    document.getElementById('qrCodeImage').src = qrCodeUrl;
-                    document.getElementById('qrModal').style.display = 'flex';
-                } else {
-                    console.error('Error uploading image:', xhr.statusText);
-                    alert('Error during upload. Please try again.');
-                }
-                shareButton.disabled = false;
-                shareButton.textContent = 'Share';
-                document.getElementById('loader').style.display = 'none';
-                document.body.classList.remove('loading');
+                
+                hiddenCanvas.toBlob(blob => {
+                    const formData = new FormData();
+                    formData.append('image', blob, 'capture.jpg');
+                    formData.append('mascot', selectedOverlayId);
+                    formData.append('macAddress', '08-71-90-32-8B-2E');
+
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', BASEURL + '/api/generate-qr', true);
+                    xhr.setRequestHeader('Accept', 'application/json');
+
+                    xhr.onload = () => {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            const response = JSON.parse(xhr.responseText);
+                            const qrCodeUrl = response.qrImageUrl;
+
+                            document.getElementById('qrCodeImage').src = qrCodeUrl;
+                            document.getElementById('qrModal').style.display = 'flex';
+                        } else {
+                            console.error('Error uploading image:', xhr.statusText);
+                            alert('Error during upload. Please try again.');
+                        }
+                        shareButton.disabled = false;
+                        shareButton.textContent = 'Share';
+                        document.getElementById('loader').style.display = 'none';
+                        document.body.classList.remove('loading');
+                    };
+
+                    xhr.onerror = () => {
+                        console.error('Error uploading image:', xhr.statusText);
+                        alert('Error during upload. Please try again.');
+                        shareButton.disabled = false;
+                        shareButton.textContent = 'Share';
+                        document.getElementById('loader').style.display = 'none';
+                        document.body.classList.remove('loading');
+                    };
+
+                    xhr.send(formData);
+                }, 'image/jpeg');
             };
 
-            xhr.onerror = () => {
-                console.error('Error uploading image:', xhr.statusText);
-                alert('Error during upload. Please try again.');
-                shareButton.disabled = false;
-                shareButton.textContent = 'Share';
-                document.getElementById('loader').style.display = 'none';
-                document.body.classList.remove('loading');
-            };
-
-            xhr.send(formData);
+            image.src = imageDataUrl;
         });
+       
 
         function dataURLtoBlob(dataURL) {
             const [header, data] = dataURL.split(',');
@@ -667,37 +714,38 @@
             const printWindow = window.open('', '_blank');
             printWindow.document.open();
             printWindow.document.write(`
-                <html>
-                    <head>
-                        <title>Print Captured Image</title>
-                        <style>
-                            @media print {
-                                body {
-                                    margin: 0;
-                                    padding: 0;
-                                    display: flex;
-                                    justify-content: center;
-                                    align-items: center;
-                                    height: 100vh;
+                    <html>
+                        <head>
+                            <title>Print Captured Image</title>
+                            <style>
+                                @media print {
+                                    body {
+                                        margin: 0;
+                                        padding: 0;
+                                        display: flex;
+                                        justify-content: center;
+                                        align-items: center;
+                                        height: 100vh;
+                                    }
+                                    img {
+                                        width: auto;
+                                        height: 55vh;
+                                        page-break-before: avoid;
+                                        display: block;
+                                        transform: rotate(90deg);
+                                    }
                                 }
-                                img {
-                                    width: auto;
-                                    height: 100%;
-                                    page-break-before: avoid;
-                                    display: block;
+                                @page {
+                                    size: auto;
+                                    margin: 0mm;
                                 }
-                            }
-                            @page {
-                                size: auto;
-                                margin: 0mm;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <img src="${imageUrl}" alt="Captured Image" />
-                    </body>
-                </html>
-            `);
+                            </style>
+                        </head>
+                        <body>
+                            <img src="${imageUrl}" alt="Captured Image" />
+                        </body>
+                    </html>
+                `);
             printWindow.document.close();
             printWindow.focus();
             setTimeout(() => {
