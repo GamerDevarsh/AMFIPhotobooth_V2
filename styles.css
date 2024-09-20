@@ -251,7 +251,7 @@
 
 
 #introOverlay {
-    display: flex;
+    display: none;
     justify-content: center;
     align-items: center;
     position: fixed;
@@ -297,6 +297,57 @@
 
     #startButton:hover {
         background-color: darkgreen;
+    }
+
+
+#faceRecPopup {
+    /*display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    z-index: 1001;
+    flex-direction: column;
+    text-align: center;*/
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 1);
+    color: #fff;
+    z-index: 1001;
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+}
+#facerecContent {
+    max-width: 625px;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    background-color: #33333373;
+}
+
+    #facerecContent h1 {
+        font-size: 28px;
+        margin-bottom: -15px;
+        color: #109A7B;
+    }
+
+    #facerecContent p {
+        font-size: 18px;
+        margin-bottom: 20px;
+        
     }
 
 
@@ -395,4 +446,9 @@ body.loading {
     width: 100%;
     height: 100%;
     object-fit: contain;
+}
+
+#videoElement {
+    width: 100%;
+    overflow:hidden;
 }

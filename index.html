@@ -9,7 +9,21 @@
 </head>
 
 <body>
+    <script type="text/javascript" src="./public/tfjs.js"></script>
+    <script type="text/javascript" src="./public/blazeface.js"></script>
+
+
     <div id="loader" class="loader" style="display: none;"></div>
+    <div id="faceRecPopup">
+        <div id="facerecContent" class="rotate-90">
+            <h1>PLEASE LOOK AT THE CAMERA !</h1>
+            <p id="message">to verify your face and start the experience.</p>
+            <video id="videoElement" autoplay playsinline></video>
+            <canvas id="canvs" style="display:none;"></canvas>
+
+            <!--<button id="startExperience" class="button">Start Experience</button>-->
+        </div>
+    </div>
     <div id="introOverlay" class="modal">
         <div id="introContent" class="rotate-90">
             <h1>Capture the moment with your favourite cricketer.</h1>

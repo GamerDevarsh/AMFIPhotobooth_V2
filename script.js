@@ -1,10 +1,137 @@
+//URL SECTION
+const BASEURL = 'https://api.bharatniveshyatra.com'; //https://192.168.1.158:5000';
+const MACURL = 'https://192.168.1.158:5001/api/bny/mac-address';
+const FACEURL = 'http://192.168.1.161:8082/detect_faces';
+
+//FACE REC CODE STARTS HERE 
+let model;
+let stopDetection = false;
+let lastRequestTime = 0;
+let isProcessing = false;
+const requestDelay = 20000;
+let isFaceDetectionTesting = false;
+
+async function loadModel() {
+    model = await blazeface.load();
+}
+
+async function detectFaces(videoElement, cvs, messageElement) {
+    if (stopDetection || isProcessing) return;
+    requestAnimationFrame(() => detectFaces(videoElement, cvs, messageElement));
+
+    const now = Date.now();
+    if (now - lastRequestTime < requestDelay) return; 
+
+    isProcessing = true;
+    try {
+        try {
+            const predictions = await model.estimateFaces(videoElement, false);
+            if (predictions.length > 0) {
+                const face = predictions[0];
+                const faceWidth = face.bottomRight[0] - face.topLeft[0];
+                const faceHeight = face.bottomRight[1] - face.topLeft[1];
+                const faceArea = faceWidth * faceHeight;
+                const frameArea = videoElement.videoWidth * videoElement.videoHeight;
+
+                if (faceArea > frameArea * 0.1 && face.probability[0] > 0.95) {
+                    sendFrame(videoElement, cvs);
+                }
+            }
+        } catch (error) {
+            console.error('Error detecting faces:', error);
+        } finally {
+            isProcessing = false;
+        }
+
+    } catch (error) {
+        console.error('Error detecting faces:', error);
+    } finally {
+        isProcessing = false;
+    }
+}
+
+
+
+function sendFrame(vidElem, cnvs) {
+    const messageElement = document.getElementById('message');
+
+    cnvs.width = vidElem.videoWidth;
+    cnvs.height = vidElem.videoHeight;
+    const cntext = cnvs.getContext('2d');
+
+    cntext.drawImage(vidElem, 0, 0, canvs.width, canvs.height);
+    if (isFaceDetectionTesting) {
+        document.getElementById('faceRecPopup').style.display = 'none';
+        document.getElementById('introOverlay').style.display = 'flex';
+
+        vidElem.srcObject.getTracks().forEach(track => track.stop());
+
+        startWebcam();
+    }
+    else {
+        cnvs.toBlob(blob => {
+            const formData = new FormData();
+            formData.append('image', blob);
+
+            fetch(FACEURL, { method: 'POST', body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    lastRequestTime = Date.now();
+                    const detected = data[0];
+                    if (detected.name !== "Unknown") {
+                        
+                        stopDetection = true;
+                        vidElem.srcObject.getTracks().forEach(track => track.stop());
+                        //messageElement.innerHTML = `Thanks for logging in, ${detected.name}.`;
+                        console.log(`Thanks for logging in, ${detected.name}.`);
+
+                        document.getElementById('faceRecPopup').style.display = 'none';
+                        startWebcam();
+
+                    } else {
+                        messageElement.innerHTML = 'Face not recognized. Please try again.';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    message.innerHTML = 'An error occurred during authentication.';
+                });
+        }, 'image/jpeg');
+    }
+
+}
+
+
+async function showFaceRecPopup() {
+    document.getElementById('faceRecPopup').style.display = 'flex';
+
+    const videoElement = document.getElementById('videoElement');
+    const canv = document.getElementById('canvs');
+    const messageElement = document.getElementById('message');
+
+    navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } })
+        .then(stream => {
+            videoElement.srcObject = stream;
+            videoElement.play();
+
+
+            loadModel().then(() => detectFaces(videoElement, canv, messageElement));
+        })
+        .catch(error => {
+            console.error('Error accessing media devices.', error);
+            messageElement.innerHTML = 'Error accessing camera.';
+        });
+}
+
+
+
+//PHOTOBOOTH CODE STARTS HERE
+
 let isCapturing = false;
 let selectedOverlayId = 0;
 let macAddress = null;
 const ovlayButton = document.getElementById('showOverlayButton');
 
-const BASEURL = 'https://api.cactusxpo.com'; //https://192.168.1.158:5000';
-const MACURL = 'https://192.168.1.158:5001/api/bny/mac-address';
 
 async function startWebcam() {
     const video = document.getElementById('webcam');
@@ -17,7 +144,14 @@ async function startWebcam() {
         const stream = await navigator.mediaDevices.getUserMedia({
             video: { width: { ideal: 1440 }, height: { ideal: 2560 }, facingMode: 'environment' }
         });
+        
         video.srcObject = stream;
+
+        const videoTrack = stream.getVideoTracks()[0];
+
+        const settings = videoTrack.getSettings();
+        console.log(`Actual stream dimensions: ${settings.width} x ${settings.height}`);
+
 
         canvas.width = 2560;
         canvas.height = 1440;
@@ -54,6 +188,7 @@ async function startWebcam() {
             requestAnimationFrame(draw);
         }
         draw();
+        startIdleTimer();
     } catch (err) {
         console.error('Error accessing webcam: ', err);
     }
@@ -70,9 +205,8 @@ async function startCapture() {
     isCapturing = true;
 
     try {
-        // Request the MAC address before proceeding
         macAddress = await getMacAddress();
-
+        //macAddress = '08-71-90-32-8B-2E'
         if (!macAddress) {
             throw new Error('MAC address not available');
         }
@@ -173,7 +307,7 @@ async function getMacAddress() {
             if (xhr.status == 200) {
                 try {
                     const response = JSON.parse(xhr.responseText);
-                    console.log(response);
+                    
                     resolve(response.macAddress);
                 } catch (error) {
                     reject('Error parsing MAC address response');
@@ -364,6 +498,36 @@ function toggleOverlaySelection() {
     }
 }
 
+//CODE SECTION FOR INTERACTION TIMEOUT AND RELOAD
+
+let idleTimeout;
+const idleDuration = 180000;//300000; // Idle time in milliseconds (e.g., 5 minutes = 300000 ms)
+
+function resetIdleTimer() {
+    // Clear the previous timeout
+    clearTimeout(idleTimeout);
+
+    idleTimeout = setTimeout(() => {
+
+        location.reload();
+    }, idleDuration);
+}
+
+function startIdleTimer() {
+
+    window.addEventListener('mousemove', resetIdleTimer);
+    window.addEventListener('mousedown', resetIdleTimer);
+    window.addEventListener('keydown', resetIdleTimer);
+    window.addEventListener('touchstart', resetIdleTimer);
+
+    resetIdleTimer();
+}
+
+function redirectOnFinish() {
+    location.reload();
+}
+
+
 document.getElementById('startButton').addEventListener('click', () => {
     document.getElementById('introOverlay').style.display = 'none';
     document.getElementById('container').style.display = 'block';
@@ -372,6 +536,7 @@ document.getElementById('startButton').addEventListener('click', () => {
 
 document.getElementById('closeThankYouButton').addEventListener('click', () => {
     document.getElementById('thankYouPopup').style.display = 'none';
+    redirectOnFinish();
 });
 
 document.getElementById('container').style.display = 'none';
@@ -379,5 +544,8 @@ document.getElementById('container').style.display = 'none';
 document.getElementById('captureButton').addEventListener('click', startCapture);
 document.getElementById('showOverlayButton').addEventListener('click', toggleOverlaySelection);
 
-startWebcam();
+
+//THE CODE EXECUTION BEGINS FROM HERE
+//startWebcam();
+showFaceRecPopup();
 handleOverlaySelection();
