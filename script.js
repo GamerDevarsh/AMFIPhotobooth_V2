@@ -9,7 +9,7 @@ let stopDetection = false;
 let lastRequestTime = 0;
 let isProcessing = false;
 const requestDelay = 20000;
-let isTesting = true;//false;
+let isTesting = false;
 
 async function loadModel() {
     model = await blazeface.load();
