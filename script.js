@@ -9,7 +9,7 @@ let stopDetection = false;
 let lastRequestTime = 0;
 let isProcessing = false;
 const requestDelay = 20000;
-let isFaceDetectionTesting = false;
+let isTesting = true;//false;
 
 async function loadModel() {
     model = await blazeface.load();
@@ -60,7 +60,7 @@ function sendFrame(vidElem, cnvs) {
     const cntext = cnvs.getContext('2d');
 
     cntext.drawImage(vidElem, 0, 0, canvs.width, canvs.height);
-    if (isFaceDetectionTesting) {
+    if (isTesting) {
         document.getElementById('faceRecPopup').style.display = 'none';
         document.getElementById('introOverlay').style.display = 'flex';
 
@@ -205,8 +205,12 @@ async function startCapture() {
     isCapturing = true;
 
     try {
-        macAddress = await getMacAddress();
-        //macAddress = '08-71-90-32-8B-2E'
+        if (isTesting) {
+            macAddress = '08-71-90-32-8B-2E'
+        }
+        else {
+            macAddress = await getMacAddress();
+        }
         if (!macAddress) {
             throw new Error('MAC address not available');
         }
