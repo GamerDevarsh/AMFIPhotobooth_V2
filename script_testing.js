@@ -20,7 +20,7 @@ async function detectFaces(videoElement, cvs, messageElement) {
     requestAnimationFrame(() => detectFaces(videoElement, cvs, messageElement));
 
     const now = Date.now();
-    if (now - lastRequestTime < requestDelay) return; 
+    if (now - lastRequestTime < requestDelay) return;
 
     isProcessing = true;
     try {
@@ -79,7 +79,7 @@ function sendFrame(vidElem, cnvs) {
                     lastRequestTime = Date.now();
                     const detected = data[0];
                     if (detected.name !== "Unknown") {
-                        
+
                         stopDetection = true;
                         vidElem.srcObject.getTracks().forEach(track => track.stop());
                         //messageElement.innerHTML = `Thanks for logging in, ${detected.name}.`;
@@ -144,7 +144,7 @@ async function startWebcam() {
         const stream = await navigator.mediaDevices.getUserMedia({
             video: { width: { ideal: 1440 }, height: { ideal: 2560 }, facingMode: 'environment' }
         });
-        
+
         video.srcObject = stream;
 
         const videoTrack = stream.getVideoTracks()[0];
@@ -222,8 +222,8 @@ async function startCapture() {
         const overlay = document.getElementById('overlay');
         const captureButton = document.getElementById('captureButton');
 
-        let countdown = 15;
-        //let countdown = 1;
+        // let countdown = 15;
+        let countdown = 1;
         captureButton.disabled = true;
         ovlayButton.disabled = true;
 
@@ -315,7 +315,7 @@ async function getMacAddress() {
             if (xhr.status == 200) {
                 try {
                     const response = JSON.parse(xhr.responseText);
-                    
+
                     resolve(response.macAddress);
                 } catch (error) {
                     reject('Error parsing MAC address response');
@@ -328,31 +328,28 @@ async function getMacAddress() {
         xhr.send();
     });
 }
+async function postImageData(base64Image) {
+    const byteString = atob(base64Image.split(',')[1]);
+    const byteArray = new Uint8Array(byteString.length);
 
-async function postImageData(image) {
+    for (let i = 0; i < byteString.length; i++) {
+        byteArray[i] = byteString.charCodeAt(i);
+    }
 
-    const file = new File(
-        [Uint8Array.from(btoa(image), (m) => m.codePointAt(0))],
-        'filename.png',
-        { type: 'image/png' }
-    );
+    const blob = new Blob([byteArray], { type: 'image/png' });
+
+    const file = new File([blob], 'filename.png', { type: 'image/png' });
 
     let formData = new FormData();
     formData.append('person_image', file);
-    console.log(formData + " formData");
-    await fetch('http://192.168.1.31:5000/  process-image', { method: "POST", body: formData })
+
+    await fetch('http://localhost:5000/process-image', {
+        method: 'POST',
+        body: formData,
+    })
         .then(rawResponse => rawResponse.json())
         .then(jsonResponse => {
             console.log('jsonResponse', jsonResponse);
-
-
-            document.getElementById('capturedImage').src = image;
-            document.getElementById('modal').style.display = 'flex';
-
-            const captureButton = document.getElementById('captureButton');
-            captureButton.disabled = false;
-            ovlayButton.disabled = false;
-            isCapturing = false;
         })
         .catch(error => console.error('Error posting image:', error));
 }
