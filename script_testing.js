@@ -1,10 +1,10 @@
-//URL SECTION
+// Base URLs
 const BASEURL = 'https://api.bharatniveshyatra.com'; //https://192.168.1.158:5000';
 const MACURL = 'https://192.168.1.158:5001/api/bny/mac-address';
 const FACEURL = 'http://192.168.1.161:8082/detect_faces';
-const PROCESSIMGURL = 'http://localhost:5000/process-image';
+const PROCESSIMGURL = 'http://localhost:8800/process-image';
 
-//FACE REC CODE STARTS HERE 
+// Face recognition logic 
 let model;
 let stopDetection = false;
 let lastRequestTime = 0;
@@ -43,7 +43,6 @@ async function detectFaces(videoElement, cvs, messageElement) {
         } finally {
             isProcessing = false;
         }
-
     } catch (error) {
         console.error('Error detecting faces:', error);
     } finally {
@@ -51,11 +50,8 @@ async function detectFaces(videoElement, cvs, messageElement) {
     }
 }
 
-
-
 function sendFrame(vidElem, cnvs) {
     const messageElement = document.getElementById('message');
-
     cnvs.width = vidElem.videoWidth;
     cnvs.height = vidElem.videoHeight;
     const cntext = cnvs.getContext('2d');
@@ -64,9 +60,7 @@ function sendFrame(vidElem, cnvs) {
     if (isTesting) {
         document.getElementById('faceRecPopup').style.display = 'none';
         document.getElementById('introOverlay').style.display = 'flex';
-
         vidElem.srcObject.getTracks().forEach(track => track.stop());
-
         startWebcam();
     }
     else {
@@ -80,15 +74,10 @@ function sendFrame(vidElem, cnvs) {
                     lastRequestTime = Date.now();
                     const detected = data[0];
                     if (detected.name !== "Unknown") {
-
                         stopDetection = true;
                         vidElem.srcObject.getTracks().forEach(track => track.stop());
-                        //messageElement.innerHTML = `Thanks for logging in, ${detected.name}.`;
-                        console.log(`Thanks for logging in, ${detected.name}.`);
-
                         document.getElementById('faceRecPopup').style.display = 'none';
                         startWebcam();
-
                     } else {
                         messageElement.innerHTML = 'Face not recognized. Please try again.';
                     }
@@ -99,7 +88,6 @@ function sendFrame(vidElem, cnvs) {
                 });
         }, 'image/jpeg');
     }
-
 }
 
 
@@ -114,8 +102,6 @@ async function showFaceRecPopup() {
         .then(stream => {
             videoElement.srcObject = stream;
             videoElement.play();
-
-
             loadModel().then(() => detectFaces(videoElement, canv, messageElement));
         })
         .catch(error => {
@@ -124,10 +110,7 @@ async function showFaceRecPopup() {
         });
 }
 
-
-
-//PHOTOBOOTH CODE STARTS HERE
-
+// Photobooth logic
 let isCapturing = false;
 let selectedOverlayId = 0;
 let macAddress = null;
@@ -135,13 +118,11 @@ let macAddress = null;
 const ovlayButton = document.getElementById('showOverlayButton');
 const captureButton = document.getElementById('captureButton');
 
-
 async function startWebcam() {
     const video = document.getElementById('webcam');
     const canvas = document.getElementById('canvas');
     const overlay = document.getElementById("overlay");
     const ctx = canvas.getContext('2d');
-    const threshold = 200;
 
     try {
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -149,13 +130,6 @@ async function startWebcam() {
         });
 
         video.srcObject = stream;
-
-        const videoTrack = stream.getVideoTracks()[0];
-
-        const settings = videoTrack.getSettings();
-        console.log(`Actual stream dimensions: ${settings.width} x ${settings.height}`);
-
-
         canvas.width = 2560;
         canvas.height = 1440;
 
@@ -180,12 +154,9 @@ async function startWebcam() {
                     drawWidth = canvas.width;
                     drawHeight = canvas.width / videoAspect;
                 }
-
                 ctx.translate(canvas.width / 2, canvas.height / 2);
                 ctx.scale(1, 1);
-
                 ctx.drawImage(video, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
-
                 ctx.restore();
             }
             requestAnimationFrame(draw);
@@ -210,23 +181,19 @@ async function startCapture() {
     try {
         if (isTesting) {
             macAddress = '08-71-90-32-8B-2E'
-        }
-        else {
+        } else {
             macAddress = await getMacAddress();
         }
+
         if (!macAddress) {
             throw new Error('MAC address not available');
         }
 
         const countdownElement = document.getElementById('countdown');
-        const modal = document.getElementById('modal');
-        const capturedImage = document.getElementById('capturedImage');
-        const canvas = document.getElementById('canvas');
-        const overlay = document.getElementById('overlay');
         const captureButton = document.getElementById('captureButton');
 
-        // let countdown = 15;
-        let countdown = 1;
+        let countdown = 15;
+        // let countdown = 1;
         captureButton.disabled = true;
         ovlayButton.disabled = true;
 
@@ -246,14 +213,11 @@ async function startCapture() {
         isCapturing = false;
         alert('Failed to retrieve MAC address. Please try again.');
     }
-
 }
 
 function captureImage() {
-
     document.getElementById('loader').style.display = 'block';
     document.body.classList.add('loading');
-
 
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
@@ -303,18 +267,9 @@ function captureImage() {
 
     //new image request code here
     postImageData(image);
-
-    //document.getElementById('capturedImage').src = image;
-    //document.getElementById('modal').style.display = 'flex';
-
-    //const captureButton = document.getElementById('captureButton');
-    //captureButton.disabled = false;
-    //ovlayButton.disabled = false;
-    //isCapturing = false;
 }
 
 async function getMacAddress() {
-
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open('GET', MACURL, true);
@@ -336,9 +291,8 @@ async function getMacAddress() {
         xhr.send();
     });
 }
-async function postImageData(base64Image) {
-    
 
+async function postImageData(base64Image) {
     const byteString = atob(base64Image.split(',')[1]);
     const byteArray = new Uint8Array(byteString.length);
 
@@ -347,7 +301,6 @@ async function postImageData(base64Image) {
     }
 
     const blob = new Blob([byteArray], { type: 'image/png' });
-
     const file = new File([blob], 'filename.png', { type: 'image/png' });
 
     let formData = new FormData();
@@ -363,9 +316,9 @@ async function postImageData(base64Image) {
 
             const base64Image = jsonResponse.output_image;
 
-            //const base64Data = base64Image.replace(/^data:image\/(png|jpg|jpeg);base64,/, '');
+            const base64Data = base64Image.replace(/^data:image\/(png|jpg|jpeg);base64,/, '');
 
-            const byteCharacters = atob(base64Image);//(base64Data);
+            const byteCharacters = atob(base64Data);//(base64Data);
             const byteNumbers = new Array(byteCharacters.length);
             for (let i = 0; i < byteCharacters.length; i++) {
                 byteNumbers[i] = byteCharacters.charCodeAt(i);
@@ -380,12 +333,12 @@ async function postImageData(base64Image) {
 
             document.getElementById('loader').style.display = 'none';
             document.body.classList.remove('loading');
-
+            captureButton.disabled = false;
+            ovlayButton.disabled = false;
+            isCapturing = false;
         })
         .catch(error => {
-
             console.error('Error posting image:', error);
-
             captureButton.disabled = false;
             ovlayButton.disabled = false;
             isCapturing = false;
@@ -402,7 +355,6 @@ document.getElementById('closeButton').addEventListener('click', () => {
 
 document.getElementById('shareButton').addEventListener('click', () => {
     const shareButton = document.getElementById('shareButton');
-
     const imageDataUrl = document.getElementById('capturedImage').src;
 
     shareButton.disabled = true;
@@ -411,23 +363,19 @@ document.getElementById('shareButton').addEventListener('click', () => {
     document.getElementById('loader').style.display = 'block';
     document.body.classList.add('loading');
 
-
     const hiddenCanvas = document.createElement('canvas');
     const hiddenCtx = hiddenCanvas.getContext('2d');
     const image = new Image();
 
     image.onload = () => {
-
         hiddenCanvas.width = image.height;
         hiddenCanvas.height = image.width;
-
 
         hiddenCtx.save();
         hiddenCtx.translate(hiddenCanvas.width / 2, hiddenCanvas.height / 2);
         hiddenCtx.rotate(90 * Math.PI / 180); // Rotate -90 degrees
         hiddenCtx.drawImage(image, -image.width / 2, -image.height / 2);
         hiddenCtx.restore();
-
 
         hiddenCanvas.toBlob(blob => {
             const formData = new FormData();
@@ -471,7 +419,6 @@ document.getElementById('shareButton').addEventListener('click', () => {
 
     image.src = imageDataUrl;
 });
-
 
 function dataURLtoBlob(dataURL) {
     const [header, data] = dataURL.split(',');
@@ -573,7 +520,7 @@ function toggleOverlaySelection() {
     }
 }
 
-//CODE SECTION FOR INTERACTION TIMEOUT AND RELOAD
+// Interaction timeout logic
 
 let idleTimeout;
 const idleDuration = 180000;//300000; // Idle time in milliseconds (e.g., 5 minutes = 300000 ms)
@@ -601,7 +548,6 @@ function redirectOnFinish() {
     location.reload();
 }
 
-
 document.getElementById('startButton').addEventListener('click', () => {
     document.getElementById('introOverlay').style.display = 'none';
     document.getElementById('container').style.display = 'block';
@@ -618,8 +564,5 @@ document.getElementById('container').style.display = 'none';
 document.getElementById('captureButton').addEventListener('click', startCapture);
 document.getElementById('showOverlayButton').addEventListener('click', toggleOverlaySelection);
 
-
-//THE CODE EXECUTION BEGINS FROM HERE
-//startWebcam();
 showFaceRecPopup();
 handleOverlaySelection();
