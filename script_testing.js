@@ -2,6 +2,7 @@
 const BASEURL = 'https://api.bharatniveshyatra.com'; //https://192.168.1.158:5000';
 const MACURL = 'https://192.168.1.158:5001/api/bny/mac-address';
 const FACEURL = 'http://192.168.1.161:8082/detect_faces';
+const PROCESSIMGURL = 'http://localhost:5000/process-image';
 
 //FACE REC CODE STARTS HERE 
 let model;
@@ -130,7 +131,9 @@ async function showFaceRecPopup() {
 let isCapturing = false;
 let selectedOverlayId = 0;
 let macAddress = null;
+
 const ovlayButton = document.getElementById('showOverlayButton');
+const captureButton = document.getElementById('captureButton');
 
 
 async function startWebcam() {
@@ -247,6 +250,11 @@ async function startCapture() {
 }
 
 function captureImage() {
+
+    document.getElementById('loader').style.display = 'block';
+    document.body.classList.add('loading');
+
+
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const video = document.getElementById('webcam');
@@ -329,6 +337,8 @@ async function getMacAddress() {
     });
 }
 async function postImageData(base64Image) {
+    
+
     const byteString = atob(base64Image.split(',')[1]);
     const byteArray = new Uint8Array(byteString.length);
 
@@ -343,15 +353,47 @@ async function postImageData(base64Image) {
     let formData = new FormData();
     formData.append('person_image', file);
 
-    await fetch('http://localhost:5000/process-image', {
+    await fetch(PROCESSIMGURL, {
         method: 'POST',
         body: formData,
     })
         .then(rawResponse => rawResponse.json())
         .then(jsonResponse => {
             console.log('jsonResponse', jsonResponse);
+
+            const base64Image = jsonResponse.output_image;
+
+            //const base64Data = base64Image.replace(/^data:image\/(png|jpg|jpeg);base64,/, '');
+
+            const byteCharacters = atob(base64Image);//(base64Data);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const imageBlob = new Blob([byteArray], { type: 'image/png' });
+
+            const imageUrl = URL.createObjectURL(imageBlob);
+
+            document.getElementById('capturedImage').src = imageUrl;
+            document.getElementById('modal').style.display = 'flex';
+
+            document.getElementById('loader').style.display = 'none';
+            document.body.classList.remove('loading');
+
         })
-        .catch(error => console.error('Error posting image:', error));
+        .catch(error => {
+
+            console.error('Error posting image:', error);
+
+            captureButton.disabled = false;
+            ovlayButton.disabled = false;
+            isCapturing = false;
+
+            document.getElementById('loader').style.display = 'none';
+            document.body.classList.remove('loading');
+
+        });
 }
 
 document.getElementById('closeButton').addEventListener('click', () => {
