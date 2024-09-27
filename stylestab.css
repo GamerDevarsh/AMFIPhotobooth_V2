@@ -10,8 +10,8 @@
 
 #container {
     position: relative;
-    width: 2880px;/*1920px;*/
-    height: 1800px;
+    width: 1800px; /*1920px;*/
+    height: 2880px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     border-radius: 10px;
     overflow: hidden;
@@ -35,7 +35,7 @@
     position: absolute;
     object-fit: cover;
     pointer-events: none;
-    transform: rotate(270deg);
+    transform: rotate(0deg);
     transform-origin: center;
 }
 
@@ -57,8 +57,8 @@
 
 #buttonContainer {
     position: absolute;
-    top: 50%;
-    left: 72%;
+    top: 82%;
+    left: 50%;
     transform: translateX(-50%);
     display: flex;
     gap: 20px;
@@ -66,7 +66,8 @@
 }
 
 .button {
-    width: 195px !important;
+    width: 249px !important;
+    height: 76px;
     padding: 15px 30px;
     background-color: #007BFF;
     color: #fff;
@@ -86,8 +87,8 @@
 #overlaySelection {
     display: none;
     position: absolute;
-    top: 45%;
-    left: 67%;
+    top: 70%;
+    left: 50%;
     transform: translateX(-50%);
     display: flex;
     gap: 10px;
@@ -96,8 +97,8 @@
 }
 
 .overlayOption {
-    width: 100px;
-    height: 150px;
+    width: auto; /*100px;*/
+    height: 260px;
     cursor: pointer;
     border: 3px solid transparent;
     border-radius: 10px;
@@ -314,6 +315,7 @@
     text-align: center;
     padding: 20px;
 }
+
 #facerecContent {
     max-width: 625px;
     padding: 20px;
@@ -331,7 +333,6 @@
     #facerecContent p {
         font-size: 18px;
         margin-bottom: 20px;
-        
     }
 
 
@@ -353,7 +354,7 @@
 }
 
 #thankYouContent {
-    max-width: 500px;
+    max-width: 700px;
     padding: 20px;
     background-color: rgba(0, 0, 0, 0.7);
     border-radius: 10px;
@@ -434,5 +435,5 @@ body.loading {
 
 #videoElement {
     width: 100%;
-    overflow:hidden;
+    overflow: hidden;
 }
