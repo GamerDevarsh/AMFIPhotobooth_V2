@@ -10,8 +10,8 @@
 
 #container {
     position: relative;
-    width: 1800px;/*1920px;*/
-    height: 2880px;
+    width: 1440px;/*1920px;*/
+    height: 2560px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     border-radius: 10px;
     overflow: hidden;

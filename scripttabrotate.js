@@ -10,7 +10,7 @@ let stopDetection = false;
 let lastRequestTime = 0;
 let isProcessing = false;
 const requestDelay = 20000;
-let isTesting = false;//false;//true;//
+let isTesting = true;//false;//true;//
 
 
 // Photobooth logic
@@ -34,12 +34,12 @@ async function startWebcam() {
 
     try {
         const stream = await navigator.mediaDevices.getUserMedia({
-            video: { width: { ideal: 1200 }, height: { ideal: 1920 }, facingMode: 'environment' }//facingMode: 'user' }
+            video: { width: { ideal: 1440 }, height: { ideal: 2560 }, facingMode: 'environment' }//facingMode: 'user' }
         });
 
         video.srcObject = stream;
-        canvas.width = 1800;//2560;
-        canvas.height = 2880;//1440; 16:10 ratio for tablet
+        canvas.width = 1440;//2560;
+        canvas.height = 2560;//1440; 16:10 ratio for tablet
 
         video.addEventListener('loadedmetadata', () => {
             video.width = video.videoWidth;
@@ -63,7 +63,7 @@ async function startWebcam() {
                     drawHeight = canvas.width / videoAspect;
                 }
                 ctx.translate(canvas.width / 2, canvas.height / 2);
-                ctx.scale(-1,1);
+                ctx.scale(1,1);
                 ctx.drawImage(video, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
                 ctx.restore();
             }
@@ -135,8 +135,8 @@ function captureImage() {
     const videoWidth = video.videoWidth;
     const videoHeight = video.videoHeight;
 
-    const canvasWidth = 1800;//1920;
-    const canvasHeight = 2880;//1200;//1080;
+    const canvasWidth = 1440;//1920;
+    const canvasHeight = 2560;//1200;//1080;
 
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
@@ -157,13 +157,13 @@ function captureImage() {
     ctx.save();
     ctx.translate(canvas.width / 2, canvas.height / 2);
     ctx.rotate(0);
-    ctx.scale(-1, 1);
+    ctx.scale(1, 1);
     ctx.drawImage(video, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
     ctx.restore();
 
     // Overlay image
-    drawWidth = 1800;//1200;//1080;
-    drawHeight = 2880;//1920;
+    drawWidth = 1440;//1200;//1080;
+    drawHeight = 2560;//1920;
 
     ctx.save();
     ctx.translate(canvas.width / 2, canvas.height / 2);
