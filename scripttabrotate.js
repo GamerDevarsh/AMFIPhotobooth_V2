@@ -10,105 +10,8 @@ let stopDetection = false;
 let lastRequestTime = 0;
 let isProcessing = false;
 const requestDelay = 20000;
-let isTesting = false; //true;//false;
+let isTesting = false;//false;//true;//
 
-async function loadModel() {
-    model = await blazeface.load();
-}
-
-async function detectFaces(videoElement, cvs, messageElement) {
-    if (stopDetection || isProcessing) return;
-    requestAnimationFrame(() => detectFaces(videoElement, cvs, messageElement));
-
-    const now = Date.now();
-    if (now - lastRequestTime < requestDelay) return;
-
-    isProcessing = true;
-    try {
-        try {
-            const predictions = await model.estimateFaces(videoElement, false);
-            if (predictions.length > 0) {
-                const face = predictions[0];
-                const faceWidth = face.bottomRight[0] - face.topLeft[0];
-                const faceHeight = face.bottomRight[1] - face.topLeft[1];
-                const faceArea = faceWidth * faceHeight;
-                const frameArea = videoElement.videoWidth * videoElement.videoHeight;
-
-                if (faceArea > frameArea * 0.1 && face.probability[0] > 0.95) {
-                    sendFrame(videoElement, cvs);
-                }
-            }
-        } catch (error) {
-            console.error('Error detecting faces:', error);
-        } finally {
-            isProcessing = false;
-        }
-    } catch (error) {
-        console.error('Error detecting faces:', error);
-    } finally {
-        isProcessing = false;
-    }
-}
-
-function sendFrame(vidElem, cnvs) {
-    const messageElement = document.getElementById('message');
-    cnvs.width = vidElem.videoWidth;
-    cnvs.height = vidElem.videoHeight;
-    const cntext = cnvs.getContext('2d');
-
-    cntext.drawImage(vidElem, 0, 0, canvs.width, canvs.height);
-    if (isTesting) {
-        document.getElementById('faceRecPopup').style.display = 'none';
-        document.getElementById('introOverlay').style.display = 'flex';
-        vidElem.srcObject.getTracks().forEach(track => track.stop());
-        startWebcam();
-    }
-    else {
-        cnvs.toBlob(blob => {
-            const formData = new FormData();
-            formData.append('image', blob);
-
-            fetch(FACEURL, { method: 'POST', body: formData })
-                .then(response => response.json())
-                .then(data => {
-                    lastRequestTime = Date.now();
-                    const detected = data[0];
-                    if (detected.name !== "Unknown") {
-                        stopDetection = true;
-                        vidElem.srcObject.getTracks().forEach(track => track.stop());
-                        document.getElementById('faceRecPopup').style.display = 'none';
-                        startWebcam();
-                    } else {
-                        messageElement.innerHTML = 'Face not recognized. Please try again.';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    message.innerHTML = 'An error occurred during authentication.';
-                });
-        }, 'image/jpeg');
-    }
-}
-
-
-async function showFaceRecPopup() {
-    document.getElementById('faceRecPopup').style.display = 'flex';
-
-    const videoElement = document.getElementById('videoElement');
-    const canv = document.getElementById('canvs');
-    const messageElement = document.getElementById('message');
-
-    navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } })
-        .then(stream => {
-            videoElement.srcObject = stream;
-            videoElement.play();
-            loadModel().then(() => detectFaces(videoElement, canv, messageElement));
-        })
-        .catch(error => {
-            console.error('Error accessing media devices.', error);
-            messageElement.innerHTML = 'Error accessing camera.';
-        });
-}
 
 // Photobooth logic
 let isCapturing = false;
@@ -117,8 +20,13 @@ let macAddress = null;
 
 const ovlayButton = document.getElementById('showOverlayButton');
 const captureButton = document.getElementById('captureButton');
+document.getElementById('faceRecPopup').style.display = 'none';
+document.getElementById('introOverlay').style.display = 'flex';
 
 async function startWebcam() {
+
+    
+
     const video = document.getElementById('webcam');
     const canvas = document.getElementById('canvas');
     const overlay = document.getElementById("overlay");
@@ -126,7 +34,7 @@ async function startWebcam() {
 
     try {
         const stream = await navigator.mediaDevices.getUserMedia({
-            video: { width: { ideal: 1200 }, height: { ideal: 1920 }, facingMode: 'user' }//facingMode: 'environment' }
+            video: { width: { ideal: 1200 }, height: { ideal: 1920 }, facingMode: 'environment' }//facingMode: 'user' }
         });
 
         video.srcObject = stream;
@@ -564,7 +472,7 @@ function redirectOnFinish() {
 document.getElementById('startButton').addEventListener('click', () => {
     document.getElementById('introOverlay').style.display = 'none';
     document.getElementById('container').style.display = 'block';
-    startWebcam();
+    
 });
 
 document.getElementById('closeThankYouButton').addEventListener('click', () => {
@@ -577,5 +485,6 @@ document.getElementById('container').style.display = 'none';
 document.getElementById('captureButton').addEventListener('click', startCapture);
 document.getElementById('showOverlayButton').addEventListener('click', toggleOverlaySelection);
 
-showFaceRecPopup();
+
+startWebcam();
 handleOverlaySelection();
