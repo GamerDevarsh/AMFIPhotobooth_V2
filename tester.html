@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Screen and Video Stream Size</title>
+    <script>
+        function getScreenAndVideoSize() {
+            // Get screen size
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+
+            // Get video stream size with environment facing mode
+            navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: 'environment'
+                }
+            })
+                .then(stream => {
+                    const video = document.createElement('video');
+                    video.srcObject = stream;
+                    video.play();
+
+
+                    video.onloadedmetadata = () => {
+                        const videoWidth = video.videoWidth;
+                        const videoHeight = video.videoHeight;
+
+
+                        // Display results in an alert
+                        alert(`Screen Size: ${screenWidth}x${screenHeight}\nVideo Stream Size: ${videoWidth}x${videoHeight}`);
+                    };
+                })
+                .catch(error => {
+                    console.error('Error accessing camera:', error);
+                });
+        }
+
+        // Call the function to get the sizes
+        getScreenAndVideoSize();
+    </script>
+</head>
+<body>
+</body>
+</html>
