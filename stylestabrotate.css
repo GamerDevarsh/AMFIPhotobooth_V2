@@ -10,8 +10,8 @@
 
 #container {
     position: relative;
-    width: 1440px;/*1920px;*/
-    height: 2560px;
+    width: 1800px;/*1920px;*/
+    height: 2880px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     border-radius: 10px;
     overflow: hidden;
@@ -241,10 +241,10 @@
     transition: background-color 0.3s, box-shadow 0.3s;
 }
 
-    #closeQrButton:hover {
-        background-color: #cc0000;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    }
+#closeQrButton:hover {
+    background-color: #cc0000;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
 
 
 
@@ -273,15 +273,15 @@
     background: #33333373;
 }
 
-    #introContent h1 {
-        font-size: 28px;
-        margin-bottom: 10px;
-    }
+ #introContent h1 {
+     font-size: 28px;
+     margin-bottom: 10px;
+ }
 
-    #introContent p {
-        font-size: 18px;
-        margin-bottom: 20px;
-    }
+ #introContent p {
+     font-size: 18px;
+     margin-bottom: 20px;
+ }
 
 #startButton {
     padding: 12px 25px;

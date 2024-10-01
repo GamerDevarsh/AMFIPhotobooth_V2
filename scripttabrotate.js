@@ -2,7 +2,7 @@
 const BASEURL = 'https://api.bharatniveshyatra.com'; //https://192.168.1.158:5000';
 const MACURL = 'https://192.168.1.158:5001/api/bny/mac-address';
 const FACEURL = 'http://192.168.1.161:8082/detect_faces';
-const PROCESSIMGURL = 'http://localhost:8800/process-image';
+const PROCESSIMGURL = 'https://192.168.1.31:8800/process-image';
 
 // Face recognition logic 
 let model;
@@ -10,7 +10,7 @@ let stopDetection = false;
 let lastRequestTime = 0;
 let isProcessing = false;
 const requestDelay = 20000;
-let isTesting = true;//false;//true;//
+let isTesting = false;//false;//true;//
 
 
 // Photobooth logic
@@ -25,7 +25,7 @@ document.getElementById('introOverlay').style.display = 'flex';
 
 async function startWebcam() {
 
-    
+
 
     const video = document.getElementById('webcam');
     const canvas = document.getElementById('canvas');
@@ -34,12 +34,12 @@ async function startWebcam() {
 
     try {
         const stream = await navigator.mediaDevices.getUserMedia({
-            video: { width: { ideal: 1440 }, height: { ideal: 2560 }, facingMode: 'environment' }//facingMode: 'user' }
+            video: {  facingMode: 'user' }//facingMode: 'user' }
         });
 
         video.srcObject = stream;
-        canvas.width = 1440;//2560;
-        canvas.height = 2560;//1440; 16:10 ratio for tablet
+        canvas.width = 1800;//2560;
+        canvas.height = 2880;//1440; 16:10 ratio for tablet
 
         video.addEventListener('loadedmetadata', () => {
             video.width = video.videoWidth;
@@ -63,7 +63,7 @@ async function startWebcam() {
                     drawHeight = canvas.width / videoAspect;
                 }
                 ctx.translate(canvas.width / 2, canvas.height / 2);
-                ctx.scale(1,1);
+                ctx.scale(1, 1);
                 ctx.drawImage(video, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
                 ctx.restore();
             }
@@ -90,7 +90,7 @@ async function startCapture() {
         if (isTesting) {
             macAddress = '40:74:e0:bc:c2:67'
         } else {
-            macAddress = await getMacAddress();
+            macAddress = '0c:7a:15:e9:f2:dc';// await getMacAddress();
         }
 
         if (!macAddress) {
@@ -100,7 +100,15 @@ async function startCapture() {
         const countdownElement = document.getElementById('countdown');
         const captureButton = document.getElementById('captureButton');
 
-        let countdown = 15;
+        let countdown;
+        if (isTesting) {
+            countdown = 15;
+        }
+        else {
+            countdown = 15;
+        }
+
+
         // let countdown = 1;
         captureButton.disabled = true;
         ovlayButton.disabled = true;
@@ -135,8 +143,8 @@ function captureImage() {
     const videoWidth = video.videoWidth;
     const videoHeight = video.videoHeight;
 
-    const canvasWidth = 1440;//1920;
-    const canvasHeight = 2560;//1200;//1080;
+    const canvasWidth = 1800;//1920;
+    const canvasHeight = 2880;//1200;//1080;
 
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
@@ -162,8 +170,8 @@ function captureImage() {
     ctx.restore();
 
     // Overlay image
-    drawWidth = 1440;//1200;//1080;
-    drawHeight = 2560;//1920;
+    drawWidth = 1800;//1200;//1080;
+    drawHeight = 2880;//1920;
 
     ctx.save();
     ctx.translate(canvas.width / 2, canvas.height / 2);
@@ -187,7 +195,7 @@ function captureImage() {
     else {
         postImageData(image);
     }
-    
+
 }
 
 async function getMacAddress() {
@@ -472,7 +480,7 @@ function redirectOnFinish() {
 document.getElementById('startButton').addEventListener('click', () => {
     document.getElementById('introOverlay').style.display = 'none';
     document.getElementById('container').style.display = 'block';
-    
+
 });
 
 document.getElementById('closeThankYouButton').addEventListener('click', () => {
