@@ -29,24 +29,39 @@ async function startWebcam() {
     const overlay = document.getElementById("overlay");
     const ctx = canvas.getContext('2d');
 
+    // Dynamically set canvas size based on viewport size
+    function setCanvasSize() {
+        const aspectRatio = 16 / 9; // Adjust based on your preferred aspect ratio
+        const width = window.innerWidth;
+        const height = width / aspectRatio;
+
+        canvas.width = width;
+        canvas.height = height;
+        video.width = width;
+        video.height = height;
+    }
+
+    // Initial canvas size setting
+    setCanvasSize();
+
+    // Listen for window resize
+    window.addEventListener('resize', setCanvasSize);
+
     try {
         const stream = await navigator.mediaDevices.getUserMedia({
             video: {
-                height: { min: 720, ideal: 2160, max: 2160 },
-                width: { min: 1280, ideal: 3840, max: 4096 },
+                height: { min: 720, ideal: 3840, max: 4096 },
+                width: { min: 1280, ideal: 2160, max: 2160 },
                 facingMode: 'environment'
             }
         });
 
         video.srcObject = stream;
 
-        // Set canvas and video size based on screen dimensions
-        resizeCanvasAndVideo();
-
-        window.addEventListener('resize', resizeCanvasAndVideo); // Adjust on window resize
-
         video.addEventListener('loadedmetadata', () => {
-            video.play(); // Start playing the video
+            // Ensure video is using the full size
+            video.play();
+            setCanvasSize(); // Adjust canvas size on load as well
         });
 
         function draw() {
@@ -66,6 +81,7 @@ async function startWebcam() {
                     drawHeight = canvas.width / videoAspect;
                 }
                 ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.scale(1, 1);
                 ctx.drawImage(video, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
                 ctx.restore();
             }
@@ -77,6 +93,7 @@ async function startWebcam() {
         console.error('Error accessing webcam: ', err);
     }
 }
+
 
 function resizeCanvasAndVideo() {
     const video = document.getElementById('webcam');
