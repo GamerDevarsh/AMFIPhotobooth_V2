@@ -1,7 +1,6 @@
 // Base URLs
-const BASEURL = 'https://api.bharatniveshyatra.com'; //https://192.168.1.158:5000';
+const BASEURL = 'https://api.bharatniveshyatra.com'; ';
 const MACURL = 'https://192.168.1.158:5001/api/bny/mac-address';
-const FACEURL = 'http://192.168.1.161:8082/detect_faces';
 const PROCESSIMGURL = 'https://api.photobooth.bharatniveshyatra.com/process-image';
 
 // Face recognition logic 
@@ -20,7 +19,6 @@ let macAddress = null;
 
 const ovlayButton = document.getElementById('showOverlayButton');
 const captureButton = document.getElementById('captureButton');
-document.getElementById('faceRecPopup').style.display = 'none';
 document.getElementById('introOverlay').style.display = 'flex';
 
 async function startWebcam() {
