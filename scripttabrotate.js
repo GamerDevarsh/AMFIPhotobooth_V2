@@ -11,7 +11,6 @@ let isProcessing = false;
 const requestDelay = 20000;
 let isTesting = false;
 
-
 // Photobooth logic
 let isCapturing = false;
 let selectedOverlayId = 0;
@@ -29,23 +28,36 @@ async function startWebcam() {
     const overlay = document.getElementById("overlay");
     const ctx = canvas.getContext('2d');
 
-    // Dynamically set canvas size based on viewport size
-    function setCanvasSize() {
-        const aspectRatio = 16 / 9; // Adjust based on your preferred aspect ratio
-        const width = window.innerWidth;
-        const height = width / aspectRatio;
+    // Function to set dimensions based on the viewport
+    function setDimensions() {
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
 
-        canvas.width = width;
-        canvas.height = height;
-        video.width = width;
-        video.height = height;
+        // Calculate new dimensions based on the aspect ratio
+        let newWidth, newHeight;
+
+        if (viewportWidth / viewportHeight > ASPECT_RATIO) {
+            newHeight = viewportHeight;
+            newWidth = newHeight * ASPECT_RATIO;
+        } else {
+            newWidth = viewportWidth;
+            newHeight = newWidth / ASPECT_RATIO;
+        }
+
+        // Set dimensions of video and canvas
+        video.width = newWidth;
+        video.height = newHeight;
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+        overlay.style.width = `${newWidth}px`;
+        overlay.style.height = `${newHeight}px`;
     }
 
-    // Initial canvas size setting
-    setCanvasSize();
+    // Set dimensions initially
+    setDimensions();
 
     // Listen for window resize
-    window.addEventListener('resize', setCanvasSize);
+    window.addEventListener('resize', setDimensions);
 
     try {
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -59,9 +71,8 @@ async function startWebcam() {
         video.srcObject = stream;
 
         video.addEventListener('loadedmetadata', () => {
-            // Ensure video is using the full size
             video.play();
-            setCanvasSize(); // Adjust canvas size on load as well
+            setDimensions(); // Adjust dimensions on load
         });
 
         function draw() {
@@ -81,7 +92,6 @@ async function startWebcam() {
                     drawHeight = canvas.width / videoAspect;
                 }
                 ctx.translate(canvas.width / 2, canvas.height / 2);
-                ctx.scale(1, 1);
                 ctx.drawImage(video, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
                 ctx.restore();
             }
@@ -94,53 +104,7 @@ async function startWebcam() {
     }
 }
 
-
-function setDimensions() {
-    const video = document.getElementById('webcam');
-    const canvas = document.getElementById('canvas');
-    const overlay = document.getElementById('overlay');
-
-    // Set dimensions based on viewport
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    // Set video and canvas dimensions
-    video.width = viewportWidth;
-    video.height = viewportHeight;
-    canvas.width = viewportWidth;
-    canvas.height = viewportHeight;
-
-    // Set overlay dimensions
-    overlay.width = viewportWidth;
-    overlay.height = viewportHeight;
-}
-
-
-function resizeCanvasAndVideo() {
-    const video = document.getElementById('webcam');
-    const canvas = document.getElementById('canvas');
-
-    // Get the available width and height of the window
-    const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
-
-    // Calculate the new dimensions based on the aspect ratio
-    let newWidth, newHeight;
-
-    if (screenWidth / screenHeight > ASPECT_RATIO) {
-        newHeight = screenHeight;
-        newWidth = newHeight * ASPECT_RATIO;
-    } else {
-        newWidth = screenWidth;
-        newHeight = newWidth / ASPECT_RATIO;
-    }
-
-    // Set the dimensions of the canvas and video
-    canvas.width = newWidth;
-    canvas.height = newHeight;
-    video.width = newWidth;
-    video.height = newHeight;
-}
+// Start capturing function
 async function startCapture() {
     const overlaySelection = document.getElementById('overlaySelection');
 
@@ -155,7 +119,7 @@ async function startCapture() {
         if (isTesting) {
             macAddress = '0c:7a:15:e9:f2:dc';
         } else {
-            macAddress = '0c:7a:15:e9:f2:dc' //await getMacAddress();
+            macAddress = '0c:7a:15:e9:f2:dc'; //await getMacAddress();
         }
 
         if (!macAddress) {
@@ -165,13 +129,7 @@ async function startCapture() {
         const countdownElement = document.getElementById('countdown');
         const captureButton = document.getElementById('captureButton');
 
-        let countdown;
-        if (isTesting) {
-            countdown = 0;
-        }
-        else {
-            countdown = 0;
-        }
+        let countdown = isTesting ? 0 : 0; // Set countdown based on testing status
 
         captureButton.disabled = true;
         ovlayButton.disabled = true;
@@ -193,6 +151,7 @@ async function startCapture() {
     }
 }
 
+// Capture image function
 function captureImage() {
     document.getElementById('loader').style.display = 'block';
     document.body.classList.add('loading');
@@ -202,62 +161,34 @@ function captureImage() {
     const video = document.getElementById('webcam');
     const overlay = document.getElementById('overlay');
 
-    const videoWidth = video.videoWidth;
-    const videoHeight = video.videoHeight;
+    // Set canvas size to capture image
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
 
-    const canvasWidth = 720;
-    const canvasHeight = 1016;
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
+    // Draw video feed
+    ctx.drawImage(video, 0, 0, canvasWidth, canvasHeight);
 
-    const videoAspect = videoWidth / videoHeight;
-    const canvasAspect = canvasWidth / canvasHeight;
-    let drawWidth, drawHeight;
-
-    if (videoAspect > canvasAspect) {
-        drawWidth = canvasHeight * videoAspect;
-        drawHeight = canvasHeight;
-    } else {
-        drawWidth = canvasWidth;
-        drawHeight = canvasWidth / videoAspect;
-    }
-
-    // Video feed
-    ctx.save();
-    ctx.translate(canvas.width / 2, canvas.height / 2);
-    ctx.rotate(0);
-    ctx.scale(1, 1);
-    ctx.drawImage(video, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
-    ctx.restore();
-
-    // Overlay image
-    drawWidth = 720;
-    drawHeight = 1016;
-
-    ctx.save();
-    ctx.translate(canvas.width / 2, canvas.height / 2);
-    //ctx.rotate(90 * Math.PI / -180);
-    ctx.drawImage(overlay, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
-    ctx.restore();
+    // Draw overlay
+    ctx.drawImage(overlay, 0, 0, canvasWidth, canvasHeight);
 
     const image = canvas.toDataURL('image/jpeg');
 
     if (isTesting) {
         document.getElementById('capturedImage').src = image;
         document.getElementById('modal').style.display = 'flex';
-        document.getElementById('modal').style.flexDirection = 'column';
         document.getElementById('loader').style.display = 'none';
         document.body.classList.remove('loading');
         captureButton.disabled = false;
         ovlayButton.disabled = false;
         isCapturing = false;
-    }
-    else {
+    } else {
         postImageData(image);
     }
 }
 
+// Get MAC Address function
 async function getMacAddress() {
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -280,6 +211,7 @@ async function getMacAddress() {
     });
 }
 
+// Post image data function
 async function postImageData(base64Image) {
     const byteString = atob(base64Image.split(',')[1]);
     const byteArray = new Uint8Array(byteString.length);
@@ -335,175 +267,20 @@ async function postImageData(base64Image) {
         });
 }
 
+// Event listeners
 document.getElementById('closeButton').addEventListener('click', () => {
     document.getElementById('modal').style.display = 'none';
 });
 
 document.getElementById('shareButton').addEventListener('click', () => {
-    const shareButton = document.getElementById('shareButton');
-    const imageDataUrl = document.getElementById('capturedImage').src;
-
-    shareButton.disabled = true;
-    shareButton.textContent = 'Sharing...';
-
-    document.getElementById('loader').style.display = 'block';
-    document.body.classList.add('loading');
-
-    const hiddenCanvas = document.createElement('canvas');
-    const hiddenCtx = hiddenCanvas.getContext('2d');
-    const image = new Image();
-
-    image.onload = () => {
-        hiddenCanvas.width = image.width;
-        hiddenCanvas.height = image.height;
-
-        hiddenCtx.save();
-        hiddenCtx.translate(hiddenCanvas.width / 2, hiddenCanvas.height / 2);
-        hiddenCtx.drawImage(image, -image.width / 2, -image.height / 2);
-        hiddenCtx.restore();
-
-        hiddenCanvas.toBlob(blob => {
-            const formData = new FormData();
-            formData.append('image', blob, 'capture.jpg');
-            formData.append('mascot', selectedOverlayId);
-            formData.append('macAddress', macAddress);
-
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', BASEURL + '/api/generate-qr', true);
-            xhr.setRequestHeader('Accept', 'application/json');
-
-            xhr.onload = () => {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    const response = JSON.parse(xhr.responseText);
-                    const qrCodeUrl = response.qrImageUrl;
-
-                    document.getElementById('qrCodeImage').src = qrCodeUrl;
-                    document.getElementById('qrModal').style.display = 'flex';
-                } else {
-                    console.error('Error uploading image:', xhr.statusText);
-                    alert('Error during upload. Please try again.');
-                }
-                shareButton.disabled = false;
-                shareButton.textContent = 'Share';
-                document.getElementById('loader').style.display = 'none';
-                document.body.classList.remove('loading');
-            };
-
-            xhr.onerror = () => {
-                console.error('Error uploading image:', xhr.statusText);
-                alert('Error during upload. Please try again.');
-                shareButton.disabled = false;
-                shareButton.textContent = 'Share';
-                document.getElementById('loader').style.display = 'none';
-                document.body.classList.remove('loading');
-            };
-
-            xhr.send(formData);
-        }, 'image/jpeg');
-    };
-
-    image.src = imageDataUrl;
+    const imageSrc = document.getElementById('capturedImage').src;
+    const a = document.createElement('a');
+    a.href = imageSrc;
+    a.download = 'captured_image.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 });
 
-function dataURLtoBlob(dataURL) {
-    const [header, data] = dataURL.split(',');
-    const mime = header.split(':')[1].split(';')[0];
-    const byteString = atob(data);
-    const arrayBuffer = new ArrayBuffer(byteString.length);
-    const uint8Array = new Uint8Array(arrayBuffer);
-
-    for (let i = 0; i < byteString.length; i++) {
-        uint8Array[i] = byteString.charCodeAt(i);
-    }
-
-    return new Blob([arrayBuffer], { type: mime });
-}
-
-document.getElementById('closeQrButton').addEventListener('click', () => {
-    document.getElementById('qrModal').style.display = 'none';
-    document.getElementById('thankYouPopup').style.display = 'flex';
-});
-
-function handleOverlaySelection() {
-    const overlays = document.querySelectorAll('.overlayOption');
-    const overlayElement = document.getElementById('overlay');
-
-    overlays.forEach(overlay => {
-        overlay.addEventListener('click', () => {
-            if (isCapturing) return;
-
-            overlays.forEach(o => o.classList.remove('selected'));
-            overlay.classList.add('selected');
-            const selectedOverlaySrc = overlay.getAttribute('data-overlay');
-            overlayElement.src = selectedOverlaySrc;
-
-            selectedOverlayId = overlay.getAttribute('data-id');
-        });
-    });
-}
-
-function toggleOverlaySelection() {
-    if (isCapturing) return;
-
-    const overlaySelection = document.getElementById('overlaySelection');
-    const showOverlayButton = document.getElementById('showOverlayButton');
-
-    if (overlaySelection.style.display === 'flex') {
-        overlaySelection.style.display = 'none';
-        showOverlayButton.textContent = 'Show Selections';
-    } else {
-        overlaySelection.style.display = 'flex';
-        showOverlayButton.textContent = 'Hide Selections';
-    }
-}
-
-// Interaction timeout logic
-let idleTimeout;
-const idleDuration = 180000;//300000; // Idle time in milliseconds (e.g., 5 minutes = 300000 ms)
-
-function resetIdleTimer() {
-    // Clear the previous timeout
-    clearTimeout(idleTimeout);
-
-    idleTimeout = setTimeout(() => {
-        location.reload();
-    }, idleDuration);
-}
-
-function startIdleTimer() {
-
-    window.addEventListener('mousemove', resetIdleTimer);
-    window.addEventListener('mousedown', resetIdleTimer);
-    window.addEventListener('keydown', resetIdleTimer);
-    window.addEventListener('touchstart', resetIdleTimer);
-
-    resetIdleTimer();
-}
-
-function redirectOnFinish() {
-    location.reload();
-}
-
-document.getElementById('startButton').addEventListener('click', () => {
-    document.getElementById('introOverlay').style.display = 'none';
-    document.getElementById('container').style.display = 'block';
-
-});
-
-document.getElementById('closeThankYouButton').addEventListener('click', () => {
-    document.getElementById('thankYouPopup').style.display = 'none';
-    redirectOnFinish();
-});
-
-document.getElementById('container').style.display = 'none';
-
-document.getElementById('captureButton').addEventListener('click', startCapture);
-document.getElementById('showOverlayButton').addEventListener('click', toggleOverlaySelection);
-
-
-startWebcam();
-handleOverlaySelection();
-// Call the function on page load
-window.addEventListener('load', setDimensions);
-// Also call it on resize to handle responsive design
-window.addEventListener('resize', setDimensions);
+// Start dimensions adjustment and webcam on page load
+window.addEventListener('load', startWebcam);
