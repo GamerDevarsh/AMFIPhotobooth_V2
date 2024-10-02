@@ -358,54 +358,6 @@ document.getElementById('closeQrButton').addEventListener('click', () => {
     document.getElementById('thankYouPopup').style.display = 'flex';
 });
 
-document.getElementById('printButton').addEventListener('click', () => {
-    const imageUrl = capturedImage.src;
-
-    document.getElementById('thankYouPopup').style.display = 'flex';
-
-    const printWindow = window.open('', '_blank');
-    printWindow.document.open();
-    printWindow.document.write(`
-                        <html>
-                            <head>
-                                <title>Print Captured Image</title>
-                                <style>
-                                    @media print {
-                                        body {
-                                            margin: 0;
-                                            padding: 0;
-                                            display: flex;
-                                            justify-content: center;
-                                            align-items: center;
-                                            height: 100vh;
-                                        }
-                                        img {
-                                            width: auto;
-                                            height: 95vh;
-                                            page-break-before: avoid;
-                                            display: block;
-                                            /*transform: rotate(90deg);*/
-                                        }
-                                    }
-                                    @page {
-                                        size: auto;
-                                        margin: 0mm;
-                                    }
-                                </style>
-                            </head>
-                            <body>
-                                <img src="${imageUrl}" alt="Captured Image" />
-                            </body>
-                        </html>
-                    `);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-        printWindow.print();
-        printWindow.close();
-    }, 500);
-});
-
 function handleOverlaySelection() {
     const overlays = document.querySelectorAll('.overlayOption');
     const overlayElement = document.getElementById('overlay');
