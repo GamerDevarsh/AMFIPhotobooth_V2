@@ -3,13 +3,14 @@ const BASEURL = 'https://api.bharatniveshyatra.com';
 const MACURL = 'https://192.168.1.158:5001/api/bny/mac-address';
 const PROCESSIMGURL = 'https://api.photobooth.bharatniveshyatra.com/process-image';
 
-// Face recognition logic 
+// Face recognition logic
 let model;
 let stopDetection = false;
 let lastRequestTime = 0;
 let isProcessing = false;
 const requestDelay = 20000;
 let isTesting = false;
+
 
 // Photobooth logic
 let isCapturing = false;
@@ -20,8 +21,6 @@ const ovlayButton = document.getElementById('showOverlayButton');
 const captureButton = document.getElementById('captureButton');
 document.getElementById('introOverlay').style.display = 'flex';
 
-const ASPECT_RATIO = 16 / 9; // Set your desired aspect ratio here
-
 async function startWebcam() {
     const video = document.getElementById('webcam');
     const canvas = document.getElementById('canvas');
@@ -31,22 +30,22 @@ async function startWebcam() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({
             video: {
-                height: { min: 720, ideal: 2160, max: 2160 },
-                width: { min: 1280, ideal: 3840, max: 4096 },
+                height: { min: 720, ideal: 3840, max: 4096 },
+                width: { min: 720, ideal: 2160, max: 2160 },
                 facingMode: 'environment'
             }
         });
 
         video.srcObject = stream;
 
+        canvas.width = 720;
+        canvas.height = 1016;
+
         video.addEventListener('loadedmetadata', () => {
-            video.play(); // Start playing the video
-            resizeCanvasAndVideo(); // Resize canvas and video on load
+            video.width = video.videoWidth;
+            video.height = video.videoHeight;
         });
-
-        window.addEventListener('resize', resizeCanvasAndVideo); // Adjust on window resize
-
-        function draw() {
+         function draw() {
             if (video.readyState >= 2) {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.save();
@@ -63,6 +62,7 @@ async function startWebcam() {
                     drawHeight = canvas.width / videoAspect;
                 }
                 ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.scale(1, 1);
                 ctx.drawImage(video, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
                 ctx.restore();
             }
@@ -74,36 +74,6 @@ async function startWebcam() {
         console.error('Error accessing webcam: ', err);
     }
 }
-
-function resizeCanvasAndVideo() {
-    const video = document.getElementById('webcam');
-    const canvas = document.getElementById('canvas');
-    const overlay = document.getElementById('overlay');
-
-    // Get the available width and height of the window
-    const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
-
-    // Calculate the new dimensions based on the aspect ratio
-    let newWidth, newHeight;
-
-    if (screenWidth / screenHeight > ASPECT_RATIO) {
-        newHeight = screenHeight;
-        newWidth = newHeight * ASPECT_RATIO;
-    } else {
-        newWidth = screenWidth;
-        newHeight = newWidth / ASPECT_RATIO;
-    }
-
-    // Set the dimensions of the canvas, video, and overlay
-    canvas.width = newWidth;
-    canvas.height = newHeight;
-    video.width = newWidth;
-    video.height = newHeight;
-    overlay.width = newWidth; // Ensure overlay is the same size
-    overlay.height = newHeight; // Ensure overlay is the same size
-}
-
 async function startCapture() {
     const overlaySelection = document.getElementById('overlaySelection');
 
@@ -118,10 +88,9 @@ async function startCapture() {
         if (isTesting) {
             macAddress = '0c:7a:15:e9:f2:dc';
         } else {
-            macAddress = '0c:7a:15:e9:f2:dc'; //await getMacAddress();
+            macAddress = '0c:7a:15:e9:f2:dc' //await getMacAddress();
         }
-
-        if (!macAddress) {
+         if (!macAddress) {
             throw new Error('MAC address not available');
         }
 
@@ -131,7 +100,8 @@ async function startCapture() {
         let countdown;
         if (isTesting) {
             countdown = 0;
-        } else {
+        }
+        else {
             countdown = 0;
         }
 
@@ -166,7 +136,6 @@ function captureImage() {
 
     const videoWidth = video.videoWidth;
     const videoHeight = video.videoHeight;
-
     const canvasWidth = 720;
     const canvasHeight = 1016;
 
@@ -199,6 +168,7 @@ function captureImage() {
 
     ctx.save();
     ctx.translate(canvas.width / 2, canvas.height / 2);
+    //ctx.rotate(90 * Math.PI / -180);
     ctx.drawImage(overlay, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
     ctx.restore();
 
@@ -212,8 +182,9 @@ function captureImage() {
         document.body.classList.remove('loading');
         captureButton.disabled = false;
         ovlayButton.disabled = false;
-        isCapturing = false;
-    } else {
+         isCapturing = false;
+    }
+    else {
         postImageData(image);
     }
 }
@@ -258,7 +229,7 @@ async function postImageData(base64Image) {
         method: 'POST',
         body: formData,
     })
-        .then(rawResponse => rawResponse.json())
+    .then(rawResponse => rawResponse.json())
         .then(jsonResponse => {
             console.log('jsonResponse', jsonResponse);
 
@@ -305,7 +276,6 @@ document.getElementById('shareButton').addEventListener('click', () => {
 
     shareButton.disabled = true;
     shareButton.textContent = 'Sharing...';
-
     document.getElementById('loader').style.display = 'block';
     document.body.classList.add('loading');
 
@@ -399,7 +369,7 @@ function handleOverlaySelection() {
 
             selectedOverlayId = overlay.getAttribute('data-id');
         });
-    });
+         });
 }
 
 function toggleOverlaySelection() {
@@ -419,7 +389,7 @@ function toggleOverlaySelection() {
 
 // Interaction timeout logic
 let idleTimeout;
-const idleDuration = 180000; // Idle time in milliseconds (e.g., 3 minutes)
+const idleDuration = 180000;//300000; // Idle time in milliseconds (e.g., 5 minutes = 300000 ms)
 
 function resetIdleTimer() {
     // Clear the previous timeout
@@ -431,6 +401,7 @@ function resetIdleTimer() {
 }
 
 function startIdleTimer() {
+
     window.addEventListener('mousemove', resetIdleTimer);
     window.addEventListener('mousedown', resetIdleTimer);
     window.addEventListener('keydown', resetIdleTimer);
@@ -445,7 +416,8 @@ function redirectOnFinish() {
 
 document.getElementById('startButton').addEventListener('click', () => {
     document.getElementById('introOverlay').style.display = 'none';
-    document.getElementById('container').style.display = 'block';
+     document.getElementById('container').style.display = 'block';
+
 });
 
 document.getElementById('closeThankYouButton').addEventListener('click', () => {
@@ -457,6 +429,7 @@ document.getElementById('container').style.display = 'none';
 
 document.getElementById('captureButton').addEventListener('click', startCapture);
 document.getElementById('showOverlayButton').addEventListener('click', toggleOverlaySelection);
+
 
 startWebcam();
 handleOverlaySelection();
