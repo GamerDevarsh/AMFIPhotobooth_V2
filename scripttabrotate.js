@@ -1,5 +1,5 @@
 // Base URLs
-const BASEURL = 'https://api.bharatniveshyatra.com'; ';
+const BASEURL = 'https://api.bharatniveshyatra.com';
 const MACURL = 'https://192.168.1.158:5001/api/bny/mac-address';
 const PROCESSIMGURL = 'https://api.photobooth.bharatniveshyatra.com/process-image';
 
