@@ -95,6 +95,30 @@ async function startWebcam() {
 }
 
 
+function setDimensions() {
+    const video = document.getElementById('webcam');
+    const canvas = document.getElementById('canvas');
+    
+    // Set width and height based on viewport
+    const aspectRatio = 720 / 1016; // The aspect ratio of your original container
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    if (viewportWidth / viewportHeight > aspectRatio) {
+        // Viewport is wider than the aspect ratio
+        const width = viewportHeight * aspectRatio;
+        video.style.width = canvas.style.width = width + 'px';
+        video.style.height = canvas.style.height = viewportHeight + 'px';
+    } else {    
+        // Viewport is taller than the aspect ratio
+        const height = viewportWidth / aspectRatio;
+        video.style.width = canvas.style.width = viewportWidth + 'px';
+        video.style.height = canvas.style.height = height + 'px';
+    }
+}
+
+
+
 function resizeCanvasAndVideo() {
     const video = document.getElementById('webcam');
     const canvas = document.getElementById('canvas');
@@ -482,3 +506,7 @@ document.getElementById('showOverlayButton').addEventListener('click', toggleOve
 
 startWebcam();
 handleOverlaySelection();
+// Call the function on page load
+window.addEventListener('load', setDimensions);
+// Also call it on resize to handle responsive design
+window.addEventListener('resize', setDimensions);
