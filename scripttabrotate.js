@@ -2,7 +2,7 @@
 const BASEURL = 'https://api.bharatniveshyatra.com'; //https://192.168.1.158:5000';
 const MACURL = 'https://192.168.1.158:5001/api/bny/mac-address';
 const FACEURL = 'http://192.168.1.161:8082/detect_faces';
-const PROCESSIMGURL = 'http://192.168.1.31:8800/process-image';
+const PROCESSIMGURL = 'https://api.photobooth.bharatniveshyatra.com/process-image';
 
 // Face recognition logic 
 let model;
@@ -103,10 +103,10 @@ async function startCapture() {
 
         let countdown;
         if (isTesting) {
-            countdown = 1;
+            countdown = 0;
         }
         else {
-            countdown = 15;
+            countdown = 0;
         }
 
         captureButton.disabled = true;
