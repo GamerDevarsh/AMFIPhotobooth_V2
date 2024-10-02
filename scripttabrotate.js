@@ -98,25 +98,22 @@ async function startWebcam() {
 function setDimensions() {
     const video = document.getElementById('webcam');
     const canvas = document.getElementById('canvas');
-    
-    // Set width and height based on viewport
-    const aspectRatio = 720 / 1016; // The aspect ratio of your original container
+    const overlay = document.getElementById('overlay');
+
+    // Set dimensions based on viewport
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
-    if (viewportWidth / viewportHeight > aspectRatio) {
-        // Viewport is wider than the aspect ratio
-        const width = viewportHeight * aspectRatio;
-        video.style.width = canvas.style.width = width + 'px';
-        video.style.height = canvas.style.height = viewportHeight + 'px';
-    } else {    
-        // Viewport is taller than the aspect ratio
-        const height = viewportWidth / aspectRatio;
-        video.style.width = canvas.style.width = viewportWidth + 'px';
-        video.style.height = canvas.style.height = height + 'px';
-    }
-}
+    // Set video and canvas dimensions
+    video.width = viewportWidth;
+    video.height = viewportHeight;
+    canvas.width = viewportWidth;
+    canvas.height = viewportHeight;
 
+    // Set overlay dimensions
+    overlay.width = viewportWidth;
+    overlay.height = viewportHeight;
+}
 
 
 function resizeCanvasAndVideo() {
