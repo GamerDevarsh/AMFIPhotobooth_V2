@@ -10,8 +10,8 @@
 
 #container {
     position: relative;
-    width: 1800px;/*1920px;*/
-    height: 2880px;
+    width: 720px;/*1800px;*/
+    height: 1016px;/*2880px;*/
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     border-radius: 10px;
     overflow: hidden;
@@ -57,7 +57,7 @@
 
 #buttonContainer {
     position: absolute;
-    top: 82%;
+    top: 80.7%;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -66,8 +66,8 @@
 }
 
 .button {
-    width: 249px !important;
-    height: 76px;
+    width: 200px !important;
+    height: 52px;
     padding: 15px 30px;
     background-color: #007BFF;
     color: #fff;
@@ -87,7 +87,7 @@
 #overlaySelection {
     display: none;
     position: absolute;
-    top: 70%;
+    top: 64%;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -98,7 +98,7 @@
 
 .overlayOption {
     width: auto;/*100px;*/
-    height: 260px;
+    height: 150px;
     cursor: pointer;
     border: 3px solid transparent;
     border-radius: 10px;
@@ -263,6 +263,7 @@
     z-index: 1000;
     flex-direction: column;
     text-align: center;
+    padding : 0px !important;
 }
 
 #introContent {

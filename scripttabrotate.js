@@ -10,7 +10,7 @@ let stopDetection = false;
 let lastRequestTime = 0;
 let isProcessing = false;
 const requestDelay = 20000;
-let isTesting = false;//false;//true;//
+let isTesting = true;//false;//true;//
 
 
 // Photobooth logic
@@ -24,9 +24,6 @@ document.getElementById('faceRecPopup').style.display = 'none';
 document.getElementById('introOverlay').style.display = 'flex';
 
 async function startWebcam() {
-
-
-
     const video = document.getElementById('webcam');
     const canvas = document.getElementById('canvas');
     const overlay = document.getElementById("overlay");
@@ -34,12 +31,28 @@ async function startWebcam() {
 
     try {
         const stream = await navigator.mediaDevices.getUserMedia({
-            video: {  facingMode: 'user' }//facingMode: 'user' }
+            video: {
+                height: { min: 1280, ideal: 3840, max: 4096 },
+                width: { min: 720, ideal: 2160, max: 2160 },
+                facingMode: 'environment'
+            }//facingMode: 'user' }
         });
 
         video.srcObject = stream;
-        canvas.width = 1800;//2560;
-        canvas.height = 2880;//1440; 16:10 ratio for tablet
+
+        // Get the first video track from the stream
+        const videoTrack = stream.getVideoTracks()[0];
+        const settings = videoTrack.getSettings();
+
+        // Log the actual dimensions in the console
+        console.log(`Actual stream dimensions: ${settings.width} x ${settings.height}`);
+
+        // Show an alert with the dimensions
+        //alert(`Actual stream dimensions: ${settings.width} x ${settings.height}`);
+
+
+        canvas.width = 720;//1800;//2560;
+        canvas.height = 1016;//2880;//1440; 16:10 ratio for tablet
 
         video.addEventListener('loadedmetadata', () => {
             video.width = video.videoWidth;
@@ -75,7 +88,6 @@ async function startWebcam() {
         console.error('Error accessing webcam: ', err);
     }
 }
-
 async function startCapture() {
     const overlaySelection = document.getElementById('overlaySelection');
 
@@ -102,7 +114,7 @@ async function startCapture() {
 
         let countdown;
         if (isTesting) {
-            countdown = 15;
+            countdown = 1;
         }
         else {
             countdown = 15;
@@ -143,8 +155,8 @@ function captureImage() {
     const videoWidth = video.videoWidth;
     const videoHeight = video.videoHeight;
 
-    const canvasWidth = 1800;//1920;
-    const canvasHeight = 2880;//1200;//1080;
+    const canvasWidth = 720;//1920;
+    const canvasHeight = 1016;//1200;//1080;
 
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
@@ -170,8 +182,8 @@ function captureImage() {
     ctx.restore();
 
     // Overlay image
-    drawWidth = 1800;//1200;//1080;
-    drawHeight = 2880;//1920;
+    drawWidth = 720;//1200;//1080;
+    drawHeight = 1016;//1920;
 
     ctx.save();
     ctx.translate(canvas.width / 2, canvas.height / 2);
@@ -259,7 +271,7 @@ async function postImageData(base64Image) {
 
             document.getElementById('capturedImage').src = imageUrl;
             document.getElementById('modal').style.display = 'flex';
-
+            document.getElementById('modal').style.flexDirection = 'column';
             document.getElementById('loader').style.display = 'none';
             document.body.classList.remove('loading');
             captureButton.disabled = false;
@@ -297,8 +309,8 @@ document.getElementById('shareButton').addEventListener('click', () => {
     const image = new Image();
 
     image.onload = () => {
-        hiddenCanvas.width = image.height;
-        hiddenCanvas.height = image.width;
+        hiddenCanvas.width = image.width;
+        hiddenCanvas.height = image.height;
 
         hiddenCtx.save();
         hiddenCtx.translate(hiddenCanvas.width / 2, hiddenCanvas.height / 2);
@@ -450,7 +462,6 @@ function toggleOverlaySelection() {
 }
 
 // Interaction timeout logic
-
 let idleTimeout;
 const idleDuration = 180000;//300000; // Idle time in milliseconds (e.g., 5 minutes = 300000 ms)
 
