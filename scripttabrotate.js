@@ -2,7 +2,7 @@
 const BASEURL = 'https://api.bharatniveshyatra.com'; //https://192.168.1.158:5000';
 const MACURL = 'https://192.168.1.158:5001/api/bny/mac-address';
 const FACEURL = 'http://192.168.1.161:8082/detect_faces';
-const PROCESSIMGURL = 'https://192.168.1.31:8800/process-image';
+const PROCESSIMGURL = 'http://192.168.1.31:8800/process-image';
 
 // Face recognition logic 
 let model;
@@ -10,7 +10,7 @@ let stopDetection = false;
 let lastRequestTime = 0;
 let isProcessing = false;
 const requestDelay = 20000;
-let isTesting = false;//true;//
+let isTesting = false;
 
 
 // Photobooth logic
@@ -35,24 +35,13 @@ async function startWebcam() {
                 height: { min: 1280, ideal: 3840, max: 4096 },
                 width: { min: 720, ideal: 2160, max: 2160 },
                 facingMode: 'environment'
-            }//facingMode: 'user' }
+            }
         });
 
         video.srcObject = stream;
 
-        // Get the first video track from the stream
-        const videoTrack = stream.getVideoTracks()[0];
-        const settings = videoTrack.getSettings();
-
-        // Log the actual dimensions in the console
-        console.log(`Actual stream dimensions: ${settings.width} x ${settings.height}`);
-
-        // Show an alert with the dimensions
-        //alert(`Actual stream dimensions: ${settings.width} x ${settings.height}`);
-
-
-        canvas.width = 720;//1800;//2560;
-        canvas.height = 1016;//2880;//1440; 16:10 ratio for tablet
+        canvas.width = 720;
+        canvas.height = 1016;
 
         video.addEventListener('loadedmetadata', () => {
             video.width = video.videoWidth;
@@ -102,7 +91,7 @@ async function startCapture() {
         if (isTesting) {
             macAddress = '0c:7a:15:e9:f2:dc';
         } else {
-            macAddress = await getMacAddress();
+            macAddress = '0c:7a:15:e9:f2:dc' //await getMacAddress();
         }
 
         if (!macAddress) {
@@ -120,8 +109,6 @@ async function startCapture() {
             countdown = 15;
         }
 
-
-        // let countdown = 1;
         captureButton.disabled = true;
         ovlayButton.disabled = true;
 
@@ -135,7 +122,6 @@ async function startCapture() {
                 countdownElement.style.display = 'none';
             }
         }, 1000);
-
     } catch (error) {
         console.error('Error during MAC address request:', error);
         isCapturing = false;
@@ -155,8 +141,8 @@ function captureImage() {
     const videoWidth = video.videoWidth;
     const videoHeight = video.videoHeight;
 
-    const canvasWidth = 720;//1920;
-    const canvasHeight = 1016;//1200;//1080;
+    const canvasWidth = 720;
+    const canvasHeight = 1016;
 
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
@@ -182,8 +168,8 @@ function captureImage() {
     ctx.restore();
 
     // Overlay image
-    drawWidth = 720;//1200;//1080;
-    drawHeight = 1016;//1920;
+    drawWidth = 720;
+    drawHeight = 1016;
 
     ctx.save();
     ctx.translate(canvas.width / 2, canvas.height / 2);
@@ -193,7 +179,6 @@ function captureImage() {
 
     const image = canvas.toDataURL('image/jpeg');
 
-    //new image request code here
     if (isTesting) {
         document.getElementById('capturedImage').src = image;
         document.getElementById('modal').style.display = 'flex';
@@ -207,7 +192,6 @@ function captureImage() {
     else {
         postImageData(image);
     }
-
 }
 
 async function getMacAddress() {
@@ -219,7 +203,6 @@ async function getMacAddress() {
             if (xhr.status == 200) {
                 try {
                     const response = JSON.parse(xhr.responseText);
-
                     resolve(response.macAddress);
                 } catch (error) {
                     reject('Error parsing MAC address response');
@@ -259,7 +242,7 @@ async function postImageData(base64Image) {
 
             const base64Data = base64Image.replace(/^data:image\/(png|jpg|jpeg);base64,/, '');
 
-            const byteCharacters = atob(base64Data);//(base64Data);
+            const byteCharacters = atob(base64Data);
             const byteNumbers = new Array(byteCharacters.length);
             for (let i = 0; i < byteCharacters.length; i++) {
                 byteNumbers[i] = byteCharacters.charCodeAt(i);
@@ -283,10 +266,8 @@ async function postImageData(base64Image) {
             captureButton.disabled = false;
             ovlayButton.disabled = false;
             isCapturing = false;
-
             document.getElementById('loader').style.display = 'none';
             document.body.classList.remove('loading');
-
         });
 }
 
