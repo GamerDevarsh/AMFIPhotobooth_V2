@@ -21,6 +21,8 @@ const ovlayButton = document.getElementById('showOverlayButton');
 const captureButton = document.getElementById('captureButton');
 document.getElementById('introOverlay').style.display = 'flex';
 
+const ASPECT_RATIO = 16 / 9; // Set your desired aspect ratio here
+
 async function startWebcam() {
     const video = document.getElementById('webcam');
     const canvas = document.getElementById('canvas');
@@ -30,20 +32,21 @@ async function startWebcam() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({
             video: {
-                height: { min: 720, ideal: 3840, max: 4096 },
-                width: { min: 720, ideal: 2160, max: 2160 },
+                height: { min: 720, ideal: 2160, max: 2160 },
+                width: { min: 1280, ideal: 3840, max: 4096 },
                 facingMode: 'environment'
             }
         });
 
         video.srcObject = stream;
 
-        canvas.width = 720;
-        canvas.height = 1016;
+        // Set canvas and video size based on screen dimensions
+        resizeCanvasAndVideo();
+
+        window.addEventListener('resize', resizeCanvasAndVideo); // Adjust on window resize
 
         video.addEventListener('loadedmetadata', () => {
-            video.width = video.videoWidth;
-            video.height = video.videoHeight;
+            video.play(); // Start playing the video
         });
 
         function draw() {
@@ -63,7 +66,6 @@ async function startWebcam() {
                     drawHeight = canvas.width / videoAspect;
                 }
                 ctx.translate(canvas.width / 2, canvas.height / 2);
-                ctx.scale(1, 1);
                 ctx.drawImage(video, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
                 ctx.restore();
             }
@@ -74,6 +76,32 @@ async function startWebcam() {
     } catch (err) {
         console.error('Error accessing webcam: ', err);
     }
+}
+
+function resizeCanvasAndVideo() {
+    const video = document.getElementById('webcam');
+    const canvas = document.getElementById('canvas');
+
+    // Get the available width and height of the window
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+
+    // Calculate the new dimensions based on the aspect ratio
+    let newWidth, newHeight;
+
+    if (screenWidth / screenHeight > ASPECT_RATIO) {
+        newHeight = screenHeight;
+        newWidth = newHeight * ASPECT_RATIO;
+    } else {
+        newWidth = screenWidth;
+        newHeight = newWidth / ASPECT_RATIO;
+    }
+
+    // Set the dimensions of the canvas and video
+    canvas.width = newWidth;
+    canvas.height = newHeight;
+    video.width = newWidth;
+    video.height = newHeight;
 }
 async function startCapture() {
     const overlaySelection = document.getElementById('overlaySelection');
