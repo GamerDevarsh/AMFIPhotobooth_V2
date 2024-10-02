@@ -32,7 +32,7 @@ async function startWebcam() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({
             video: {
-                height: { min: 1280, ideal: 3840, max: 4096 },
+                height: { min: 720, ideal: 3840, max: 4096 },
                 width: { min: 720, ideal: 2160, max: 2160 },
                 facingMode: 'environment'
             }
