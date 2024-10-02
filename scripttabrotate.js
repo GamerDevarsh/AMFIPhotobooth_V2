@@ -10,7 +10,7 @@ let stopDetection = false;
 let lastRequestTime = 0;
 let isProcessing = false;
 const requestDelay = 20000;
-let isTesting = true;//false;//true;//
+let isTesting = false;//true;//
 
 
 // Photobooth logic
@@ -100,9 +100,9 @@ async function startCapture() {
 
     try {
         if (isTesting) {
-            macAddress = '40:74:e0:bc:c2:67'
+            macAddress = '0c:7a:15:e9:f2:dc';
         } else {
-            macAddress = '0c:7a:15:e9:f2:dc';// await getMacAddress();
+            macAddress = await getMacAddress();
         }
 
         if (!macAddress) {
@@ -314,7 +314,6 @@ document.getElementById('shareButton').addEventListener('click', () => {
 
         hiddenCtx.save();
         hiddenCtx.translate(hiddenCanvas.width / 2, hiddenCanvas.height / 2);
-        //hiddenCtx.rotate(90 * Math.PI / 180); // Rotate -90 degrees
         hiddenCtx.drawImage(image, -image.width / 2, -image.height / 2);
         hiddenCtx.restore();
 
