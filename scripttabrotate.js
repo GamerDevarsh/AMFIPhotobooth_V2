@@ -3,7 +3,7 @@ const BASEURL = 'https://api.bharatniveshyatra.com';
 const MACURL = 'https://192.168.1.158:5001/api/bny/mac-address';
 const PROCESSIMGURL = 'https://api.photobooth.bharatniveshyatra.com/process-image';
 
-// Face recognition logic
+// Face recognition logic 
 let model;
 let stopDetection = false;
 let lastRequestTime = 0;
@@ -45,7 +45,8 @@ async function startWebcam() {
             video.width = video.videoWidth;
             video.height = video.videoHeight;
         });
-         function draw() {
+
+        function draw() {
             if (video.readyState >= 2) {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.save();
@@ -90,7 +91,8 @@ async function startCapture() {
         } else {
             macAddress = '0c:7a:15:e9:f2:dc' //await getMacAddress();
         }
-         if (!macAddress) {
+
+        if (!macAddress) {
             throw new Error('MAC address not available');
         }
 
@@ -136,6 +138,7 @@ function captureImage() {
 
     const videoWidth = video.videoWidth;
     const videoHeight = video.videoHeight;
+
     const canvasWidth = 720;
     const canvasHeight = 1016;
 
@@ -182,7 +185,7 @@ function captureImage() {
         document.body.classList.remove('loading');
         captureButton.disabled = false;
         ovlayButton.disabled = false;
-         isCapturing = false;
+        isCapturing = false;
     }
     else {
         postImageData(image);
@@ -229,7 +232,7 @@ async function postImageData(base64Image) {
         method: 'POST',
         body: formData,
     })
-    .then(rawResponse => rawResponse.json())
+        .then(rawResponse => rawResponse.json())
         .then(jsonResponse => {
             console.log('jsonResponse', jsonResponse);
 
@@ -276,6 +279,7 @@ document.getElementById('shareButton').addEventListener('click', () => {
 
     shareButton.disabled = true;
     shareButton.textContent = 'Sharing...';
+
     document.getElementById('loader').style.display = 'block';
     document.body.classList.add('loading');
 
@@ -369,7 +373,7 @@ function handleOverlaySelection() {
 
             selectedOverlayId = overlay.getAttribute('data-id');
         });
-         });
+    });
 }
 
 function toggleOverlaySelection() {
@@ -416,7 +420,7 @@ function redirectOnFinish() {
 
 document.getElementById('startButton').addEventListener('click', () => {
     document.getElementById('introOverlay').style.display = 'none';
-     document.getElementById('container').style.display = 'block';
+    document.getElementById('container').style.display = 'block';
 
 });
 

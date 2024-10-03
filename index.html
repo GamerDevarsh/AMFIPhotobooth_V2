@@ -12,14 +12,14 @@
     <div id="loader" class="loader" style="display: none;"></div>
 
     <div id="introOverlay" class="modal">
-        <div id="introContent" >
+        <div id="introContent">
             <h1>Capture the moment with your favourite cricketer.</h1>
             <p>Scan the QR code to keep the memory.</p>
             <button id="startButton" class="button">Start Experience</button>
         </div>
     </div>
     <div id="thankYouPopup" class="modal">
-        <div id="thankYouContent" >
+        <div id="thankYouContent">
             <h2>Thank You!</h2>
             <p>We hope you enjoyed the experience. Have a great day!</p>
             <button id="closeThankYouButton" class="button">Close</button>
@@ -29,9 +29,9 @@
         <video id="webcam" autoplay playsinline></video>
         <canvas id="canvas"></canvas>
         <img id="overlay" src="../Photos/Sachintab.png" alt="Overlay Image" /><!--Sachin.png-->
-        <div id="countdown" ></div>
+        <div id="countdown"></div>
         <div>
-            <div id="overlaySelection"  style="display: flex;">
+            <div id="overlaySelection" style="display: flex;">
                 <img class="overlayOption selected" src="../Photos/Sachintab.png" data-overlay="../Photos/Sachintab.png" data-id="0"
                      alt="Overlay 1"><!--Sachin.png-->
                 <img id="1" class="overlayOption" src="../Photos/Rohittab.png" data-overlay="../Photos/Rohittab.png" data-id="1"
@@ -40,13 +40,13 @@
                      alt="Overlay 3"><!--DhoniovlayImg-->
             </div>
 
-            <div id="buttonContainer" >
+            <div id="buttonContainer">
                 <button id="showOverlayButton" class="button">Hide Selections</button>
                 <button id="captureButton" class="button">Start Capture</button>
             </div>
         </div>
 
-        </div>
+    </div>
 
     <div id="modal">
         <img id="capturedImage" src="" alt="Captured Image" />
@@ -58,7 +58,7 @@
     </div>
 
     <div id="qrModal" class="modal" style="display: none;">
-        <div id="qrModalContent" >
+        <div id="qrModalContent">
             <h2>Scan to download image!</h2>
             <img id="qrCodeImage" src="" alt="QR Code" />
             <button id="closeQrButton">Close</button>
