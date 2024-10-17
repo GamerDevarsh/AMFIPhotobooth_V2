@@ -98,7 +98,7 @@ async function startCapture() {
     isCapturing = true;
 
     try {
-        macAddress = getMacAddress();
+        macAddress = await getMacAddress();
         if (!macAddress) {
             throw new Error('MAC address not available');
         }
@@ -201,8 +201,9 @@ function captureImage() {
 
 async function getMacAddress() {
     console.log(`Binded with MAC: ${hostname}(${macAddressMap[hostname]})`);
-    return macAddressMap[hostname] || 'local';
+    return await macAddressMap[hostname] || 'local';
 }
+
 
 async function postImageData(base64Image) {
     const byteString = atob(base64Image.split(',')[1]);
