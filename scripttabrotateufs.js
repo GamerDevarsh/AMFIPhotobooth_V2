@@ -6,6 +6,8 @@ const macAddressMap = {
     'bus2.photobooth.bharatniveshyatra.com': '9c:7b:ef:59:8f:40',
     'bus3.photobooth.bharatniveshyatra.com': '0c:7a:15:e9:f2:dc',
     'bus4.photobooth.bharatniveshyatra.com': '84:a9:3e:85:ae:66',
+    '127.0.0.1': '84:a9:3e:85:ae:66',
+
 };
 
 const hostname = window.location.hostname;
@@ -96,12 +98,7 @@ async function startCapture() {
     isCapturing = true;
 
     try {
-        if (isTesting) {
-            macAddress = '0c:7a:15:e9:f2:dc';
-        } else {
-            macAddress = getMacAddress();
-        }
-
+        macAddress = getMacAddress();
         if (!macAddress) {
             throw new Error('MAC address not available');
         }
@@ -203,7 +200,7 @@ function captureImage() {
 }
 
 async function getMacAddress() {
-    console.log('Binded with MAC: ', hostname)
+    console.log(`Binded with MAC: ${hostname}(${macAddressMap[hostname]})`);
     return macAddressMap[hostname] || 'local';
 }
 
