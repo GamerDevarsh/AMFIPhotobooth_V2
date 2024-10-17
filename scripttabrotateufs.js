@@ -1,6 +1,16 @@
 // Base URLs
 const BASEURL = 'https://api.bharatniveshyatra.com';
-const MACURL = 'https://192.168.1.158:5001/api/bny/mac-address';
+
+const macAddressMap = {
+    'bus1.photobooth.bharatniveshyatra.com': '00-f1-f5-2d-8a-9b',
+    'bus2.photobooth.bharatniveshyatra.com': '9c:7b:ef:59:8f:40',
+    'bus3.photobooth.bharatniveshyatra.com': '0c:7a:15:e9:f2:dc',
+    'bus4.photobooth.bharatniveshyatra.com': '84:a9:3e:85:ae:66',
+};
+
+const hostname = window.location.hostname;
+
+
 const PROCESSIMGURL = 'https://api.photobooth.bharatniveshyatra.com/process-image';
 
 // Face recognition logic 
@@ -89,7 +99,7 @@ async function startCapture() {
         if (isTesting) {
             macAddress = '0c:7a:15:e9:f2:dc';
         } else {
-            macAddress = '0c:7a:15:e9:f2:dc' //await getMacAddress();
+            macAddress = getMacAddress();
         }
 
         if (!macAddress) {
@@ -193,25 +203,8 @@ function captureImage() {
 }
 
 async function getMacAddress() {
-    return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', MACURL, true);
-        xhr.setRequestHeader('Accept', 'application/json');
-        xhr.onload = () => {
-            if (xhr.status == 200) {
-                try {
-                    const response = JSON.parse(xhr.responseText);
-                    resolve(response.macAddress);
-                } catch (error) {
-                    reject('Error parsing MAC address response');
-                }
-            } else {
-                reject('Error fetching MAC address');
-            }
-        };
-        xhr.onerror = () => reject('Error fetching MAC address');
-        xhr.send();
-    });
+    console.log('Binded with MAC: ', hostname)
+    return macAddressMap[hostname] || 'local';
 }
 
 async function postImageData(base64Image) {
